@@ -7,7 +7,7 @@ env:
   CUDA=9.2
 before_install:
   - sudo apt-get install -y gfortran
-  - sudo bash travisci/install-cuda-trusty.sh
+  - source travisci/install-cuda-trusty.sh
 install:
 - pip install .
 - pip install codecov
