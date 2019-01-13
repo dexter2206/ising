@@ -3,8 +3,6 @@ python:
 - '2.7'
 - '3.6'
 - '3.7'
-env:
-  CUDA=9.2
 before_install:
   - sudo apt-get install -y gfortran
   - source travisci/install-cuda-trusty.sh
