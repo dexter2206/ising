@@ -6,8 +6,8 @@ python:
 before_install:
   - sudo apt-get install -y gfortran
   - travis_retry wget --progress=dot:mega https://developer.nvidia.com/compute/cuda/9.2/Prod2/local_installers/cuda_9.2.148_396.37_linux
-  - chmod +x cuda_\*_linux
-  - sudo ./cuda_\*_linux --silent --toolkit
+  - chmod +x cuda_*_linux
+  - sudo ./cuda_*_linux --silent --toolkit
 install:
 - pip install .
 - pip install codecov
