@@ -12,7 +12,6 @@ CPU_SEARCH_EXT = Extension('isingcpu',
                                     './ising/ext_sources/cpucsort.cu',
                                     './ising/ext_sources/cpu_thrust_sort.f90',
                                     './ising/ext_sources/cpusearch.pyf',
-                                    './ising/ext_sources/cpuselect.f90',
                                     './ising/ext_sources/cpusearch.f90'])
 
 GPU_SEARCH_EXT = Extension('isinggpu',
