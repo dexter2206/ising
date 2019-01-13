@@ -85,7 +85,6 @@ contains
 
     use omp_lib
     use types
-    use select
     use bucketselect
     use thrust
     
