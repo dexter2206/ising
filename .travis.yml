@@ -18,7 +18,7 @@ install:
 - pip install .
 - pip install codecov
 script:
-- python setup.py build_ext --build bdist_wheel
+- python setup.py build_ext build bdist_wheel
 after_success:
 - codecov
 deploy:
