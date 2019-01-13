@@ -2,7 +2,6 @@ language: python
 python:
 - '2.7'
 - '3.6'
-- '3.7'
 before_install:
   - sudo apt-get install -y gfortran
   - echo "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/ /" | sudo tee -a /etc/apt/sources.list.d/cuda.list
