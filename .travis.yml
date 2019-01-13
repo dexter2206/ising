@@ -18,12 +18,13 @@ install:
 - pip install .
 - pip install codecov
 script:
-- coverage run setup.py test
+- python setup.py build_ext --build bdist_wheel
 after_success:
 - codecov
 deploy:
   provider: pypi
   username: dexter2206
   distributions: "bdist_wheel"
+  skip_cleanup: true
   password:
     secure: qekTicWQZ6LBty2PGWqWew+bUsXCzrvSrVpYb7CNt9PtYTjYrBPVFFcIL3jK8ebl7/8PSIzKGIMYWV3cMEkxu/8MQbDn3ApRkQzPMeb48gHcMtIO0nXrIqHKd0PAWdyQqBb7cAgSFftR5P/Ct7y0vS1gjEf00bph6gX5ZKsSABo43AiEPnZVXYObsGgqMvVIIBleQN5igSHYgtB+J2rs9sZMCdnaSZBbbqy9LEJhpzstigqgMeKJwWcnxRlMiOeQkRWnL0UMpHbjSQFnUWbumJ6yr4Ix0I9zuGsWyEshHeIkjEo1DsCstyJkT2nVwUTZE1YRHvLeSfuC6yRj+7sUD29AXs/3B9j5AAEiAgh3SjLJ/4t7E8C71GmC/FXawV5zz0jvyWx/Nh74qb7DLWTRRt+rLt1yl3VOcHho+XkwysVwIomxuklEMIcKz4Dar0+ETuFF8ZZCm5MGX6o498UvlVNjacVWSTRoVujnxL3BDTrJrEQvRGSH9lhLPMGnbxCYsnJX7aE6/1UT3TzJkQnPMsvb1giAEprkTd+uU58Kbxp7NoJxR4M88dUh9wXj4CcqMKMfWLMVWUUX/70at5TFAJ6UV0jL8UFKxKkWVQ37WHScf0tqfvqEBMoTR+hSO/NyZJc7StO7l3i4z/tqItd1Dr+iJtBed9rkRmkcOnRLgbU=
