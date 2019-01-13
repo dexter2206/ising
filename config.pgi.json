@@ -1,0 +1,22 @@
+{
+    "fortran_compile_args": {
+	"common": ["-mp",
+		   "-Mfree",
+		   "-Mpreprocess"],
+	"optimal": ["-O4",
+		    "-fast",
+		    "-Minline",
+		    "-pgf90libs"],
+	"debug": ["-O0",
+		  "-g",
+		  "-traceback",
+		  "-Mbounds",
+		  "-Mchkptr",
+                  "-Mchkstk",
+		  "-Minform=inform"]
+    },
+    "libraries": ["stdc++", "gomp", "pthread", "m", "dl"],
+    "link_args": ["-Mcuda"]
+}
+	
+	    

@@ -1,0 +1,22 @@
+{
+    "fortran_compile_args": {
+	"common": ["-m64",
+		   "-fopenmp"],
+	"optimal": ["-Ofast",
+		    "-finline-functions",
+		    "-fno-range-check",
+		    "-Wl,--no-as-needed"],
+	"debug": ["-O0",
+		  "-g",
+		  "-fno-range-check",
+		  "-fcheck=all",
+		  "-fbacktrace", 
+                  "-Wall",
+		  "-Wextra",
+		  "-Wconversion",
+		  "-ffpe-trap=zero,overflow,underflow",
+		  "-pedantic",
+		  "-Wl,--no-as-needed"]
+    },
+    "libraries": ["stdc++", "cuda", "cudart", "gomp", "pthread", "m", "dl"]
+}

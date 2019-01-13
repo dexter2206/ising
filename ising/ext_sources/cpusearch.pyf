@@ -1,0 +1,59 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module find_lowest__user__routines 
+    interface find_lowest_user_interface 
+        subroutine callback(m) ! in :f_cpu:cpusearch.f90:cpusearch:find_lowest:unknown_interface
+            intent(callback) callback
+            integer(kind=8) :: m
+        end subroutine callback
+    end interface find_lowest_user_interface
+end python module find_lowest__user__routines
+python module isingcpu ! in 
+    interface  ! in :f_cpu
+        module types ! in :f_cpu:cpusearch.f90
+            integer, parameter,optional :: ik=8
+            integer(kind=8), parameter,optional :: d=2
+            integer, parameter,optional :: wp=kind(1.0d0)
+        end module types
+        module cpusearch ! in :f_cpu:cpusearch.f90
+            subroutine find_lowest(jh,no_bits,sweep_size,energies_out,states_out,how_many,omp_threads) ! in :f_cpu:cpusearch.f90:cpusearch
+                use omp_lib
+                use types
+                use find_lowest__user__routines
+                real(kind=8) dimension(no_bits,no_bits),intent(in) :: jh
+                integer, optional,intent(in),check(shape(jh,0)==no_bits),depend(jh) :: no_bits=shape(jh,0)
+                integer intent(in) :: sweep_size
+                real(kind=8) dimension(how_many),intent(out),depend(how_many) :: energies_out
+                integer(kind=8) dimension(how_many),intent(out),depend(how_many) :: states_out
+                integer(kind=8) intent(inout) :: how_many
+                integer intent(in) :: omp_threads
+                intent(callback) callback
+                external callback
+              end subroutine find_lowest
+            subroutine find_lowest_energies_only(jh,no_bits,sweep_size,energies_out,how_many,omp_threads) ! in :f_cpu:cpusearch.f90:cpusearch
+                use omp_lib
+                use types
+                use find_lowest__user__routines
+                real(kind=8) dimension(no_bits,no_bits),intent(in) :: jh
+                integer, optional,intent(in),check(shape(jh,0)==no_bits),depend(jh) :: no_bits=shape(jh,0)
+                integer intent(in) :: sweep_size
+                real(kind=8) dimension(how_many),intent(out),depend(how_many) :: energies_out
+                integer(kind=8) intent(inout) :: how_many
+                integer intent(in) :: omp_threads
+                intent(callback) callback
+                external callback
+              end subroutine find_lowest_energies_only
+            function energy(state_repr,jh,no_bits) ! in :f_cpu:cpusearch.f90:cpusearch
+                use types
+                integer(kind=8) intent(in) :: state_repr
+                real(kind=8) dimension(:,:),intent(in) :: jh
+                integer intent(in) :: no_bits
+                real(kind=8), pure :: energy
+            end function energy
+        end module cpusearch
+    end interface 
+end python module isingcpu
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/

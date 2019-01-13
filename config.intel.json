@@ -1,0 +1,17 @@
+{
+    "fortran_compile_args": {
+	"common": ["-qopenmp",
+		   "-fpp"],
+	"optimal": ["-xHost",
+		    "-O3",
+		    "-inline"],
+	"debug": ["-O0",
+		  "-traceback",
+		  "-g",
+		  "-debug all",
+		  "-check bounds",
+		  "-gen-interfaces",
+		  "-warn interfaces"]
+    },
+    "libraries": ["stdc++", "cuda", "cudart", "gomp", "iomp5"]
+}
