@@ -1,6 +1,6 @@
 Ising
 ============
-K. Jałowiecki, M. Rams and B. Gardas
+\K. Jałowiecki, M. Rams and B. Gardas
 
 **Ising** is an open source package for exactly solving abritrary Ising model instances via exhaustive search. It can be used as an excellent tool for benchmarking other solvers or generating low energy spectra. The package is compatible with \*NIX systems (and in principle should work on Windows too). **Ising** supports parallel computation via OpenMP or GPU, if it was build with GPU support.
 
