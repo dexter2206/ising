@@ -8,6 +8,8 @@ for PYBIN in /opt/python/*/bin; do
     CPATH=$CPATH:/ising/thrust "${PYBIN}/pip" wheel /ising/ -w /ising/wheelhouse/
 done
 
+ls /ising/wheelhouse
+ls /ising/wheelhouse/*.whl
 ls /ising/wheelhouse/ising*manylinux*.whl
 
 # Bundle external shared libraries into the wheels
