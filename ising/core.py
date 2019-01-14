@@ -74,7 +74,7 @@ def search(graph, num_states=10, energies_only=False, **kwargs):
         else:
             energies, state_reprs = cpusearch.find_lowest(qubo,
                                                           chunk_size,
-                                                          num_states,,
+                                                          num_states,
                                                           callback=callback)
     else:
         logger.info('Running GPU search: Jh.shape=%s, num_states=%d, chunk_size=%d',
