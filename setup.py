@@ -33,7 +33,7 @@ GPU_SEARCH_EXT = Extension('isinggpu',
 EXTENSIONS = [CPU_SEARCH_EXT, GPU_SEARCH_EXT]
 
 setup(
-    version='0.1.16',
+    version='0.1.20',
     name='ising',
     cmdclass={'build_ext': BuildExtCommand},
     install_requires=['numpy', 'psutil', 'progressbar2', 'future'],
