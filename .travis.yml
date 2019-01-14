@@ -1,30 +1,16 @@
 language: python
-python:
-- '2.7'
-- '3.6'
-before_install:
-  - sudo apt-get install -y gfortran
-  - echo "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/ /" | sudo tee -a /etc/apt/sources.list.d/cuda.list
-  - sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/7fa2af80.pub
-  - sudo apt-get update -q
-  - sudo apt-get install -y --no-install-recommends cuda-drivers=396.44-1 libcuda1-396  
-  - travis_retry wget --progress=dot:mega https://developer.nvidia.com/compute/cuda/9.2/Prod2/local_installers/cuda_9.2.148_396.37_linux
-  - chmod +x cuda_*_linux
-  - sudo ./cuda_*_linux --silent --toolkit
-  - export CUDA_HOME=/usr/local/cuda-9.2
-  - export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
-  - export PATH=${CUDA_HOME}/bin:${PATH}
+matrix:
+  include:
+  - sudo: required
+    services:
+    - docker
+    env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
 install:
-- pip install .
-- pip install codecov
+- docker pull $DOCKER_IMAGE
 script:
-- python setup.py build_ext build bdist_wheel
-after_success:
-- codecov
-deploy:
-  provider: pypi
-  username: dexter2206
-  distributions: "bdist_wheel"
-  skip_cleanup: true
-  password:
-    secure: qekTicWQZ6LBty2PGWqWew+bUsXCzrvSrVpYb7CNt9PtYTjYrBPVFFcIL3jK8ebl7/8PSIzKGIMYWV3cMEkxu/8MQbDn3ApRkQzPMeb48gHcMtIO0nXrIqHKd0PAWdyQqBb7cAgSFftR5P/Ct7y0vS1gjEf00bph6gX5ZKsSABo43AiEPnZVXYObsGgqMvVIIBleQN5igSHYgtB+J2rs9sZMCdnaSZBbbqy9LEJhpzstigqgMeKJwWcnxRlMiOeQkRWnL0UMpHbjSQFnUWbumJ6yr4Ix0I9zuGsWyEshHeIkjEo1DsCstyJkT2nVwUTZE1YRHvLeSfuC6yRj+7sUD29AXs/3B9j5AAEiAgh3SjLJ/4t7E8C71GmC/FXawV5zz0jvyWx/Nh74qb7DLWTRRt+rLt1yl3VOcHho+XkwysVwIomxuklEMIcKz4Dar0+ETuFF8ZZCm5MGX6o498UvlVNjacVWSTRoVujnxL3BDTrJrEQvRGSH9lhLPMGnbxCYsnJX7aE6/1UT3TzJkQnPMsvb1giAEprkTd+uU58Kbxp7NoJxR4M88dUh9wXj4CcqMKMfWLMVWUUX/70at5TFAJ6UV0jL8UFKxKkWVQ37WHScf0tqfvqEBMoTR+hSO/NyZJc7StO7l3i4z/tqItd1Dr+iJtBed9rkRmkcOnRLgbU=
+- docker run --rm -v `pwd`:/ising $DOCKER_IMAGE $PRE_CMD /ising/travisci/build-wheels.sh
+- ls wheelhouse/
+- echo $TWINE_PASSWORD
+env:
+  matrix:
+    secure: ZPuvxyXIFLuY2mj6LsWlkF5snRetqVv0WHgkX92M0Q7tpPkwwcKEHD58O0zJSSc0fREVJU3rlpsL/b3np2rE8aE07jCtDbCDpYOsGgGfVvctURNRHchkvfGljMMIMuhIzmbZPSCTsiJMIrqQ6IpXj2g2CYR6sB1/ixN5Dfx5V7nKf4thnxOxdFvJt3F8H2mPsgXgfuw7SkznT/amXeQrVq3DVrtcMyLvpjWkAjGf8OBriZA6QWx5+l/7qzNa6c1EDBUh80H8pCyzqDkBJFNt4dzeZxkWMOgcyPJ8a3sqJjpooiZtSnBOLyo2QVB7ivJ8WveCqGWKHlt8ipWVZUnFgZMeqoSpMFldcF9K6urmEf/M0NDUMbbBb+ExZ9KU/ahWqZgKwYuFVO4WD33XpYdm1ZmAK6Jt6FaKjp/DgzbtHonEvziitjt5QlIy/ANzd6KmNtVuKQzllEnbv1l5NEYPECmA5NJiPs/xou2HRdGDSHKONZ6K4swpXJLZFM5C8Z5fL9rDFW5wtnz0jVX71khT+YTDDxp72JyWGWHPN+VmpmO0mc8FqlUbm9aF8gY9VnzfYz0NZ1Uf+bowSOgnADDRVKGOwL7KU7OQIkzrrZyAyQ1hyUSEYVGPM/kha/yuHZOhpJ3TxABMtuK4Vz/Zq3GTTrMg0sIaX20Ukh/vNJOM5OU=
