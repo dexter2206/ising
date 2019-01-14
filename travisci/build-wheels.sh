@@ -8,8 +8,10 @@ for PYBIN in /opt/python/*/bin; do
     CPATH=$CPATH:/ising/thrust "${PYBIN}/pip" wheel /ising/ -w wheelhouse/
 done
 
+ls /ising/wheelhouse
+
 # Bundle external shared libraries into the wheels
-for whl in wheelhouse/ising*manylinux*.whl; do
+for whl in /ising/wheelhouse/ising*manylinux*.whl; do
     auditwheel repair "$whl" -w /ising/wheelhouse/
 done
 
