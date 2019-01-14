@@ -36,7 +36,7 @@ setup(
     version='0.1.21',
     name='ising',
     cmdclass={'build_ext': BuildExtCommand},
-    install_requires=['numpy', 'psutil', 'progressbar2', 'future'],
+    install_requires=['numpy>=0.16.0', 'psutil', 'progressbar2', 'future'],
     ext_modules=EXTENSIONS,
     packages=['ising']
 )
