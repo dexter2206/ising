@@ -33,9 +33,10 @@ GPU_SEARCH_EXT = Extension('isinggpu',
 EXTENSIONS = [CPU_SEARCH_EXT, GPU_SEARCH_EXT]
 
 setup(
-    version='0.1.21',
+    use_scm_version=True,
     name='ising',
     cmdclass={'build_ext': BuildExtCommand},
+    setup_requires=['setuptools_scm'],
     install_requires=['numpy>=0.16.0', 'psutil', 'progressbar2', 'future'],
     ext_modules=EXTENSIONS,
     packages=['ising']
