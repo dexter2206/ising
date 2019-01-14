@@ -63,21 +63,18 @@ def search(graph, num_states=10, energies_only=False, **kwargs):
         callback = dummy_callback
 
     if method.lower() == 'cpu':
-        omp_threads = kwargs.get('omp_threads', 1)
-        logger.info('Running CPU search: Jh.shape=%s, chunk_size=%d, num_states=%d, omp_thread=%d',
-                    jh_mat.shape, chunk_size, num_states, omp_threads)
+        logger.info('Running CPU search: Jh.shape=%s, chunk_size=%d, num_states=%d',
+                    jh_mat.shape, chunk_size, num_states)
         callback(0)
         if energies_only:
             energies = cpusearch.find_lowest_energies_only(qubo,
                                                            chunk_size,
                                                            num_states,
-                                                           omp_threads,
                                                            callback=callback)
         else:
             energies, state_reprs = cpusearch.find_lowest(qubo,
                                                           chunk_size,
-                                                          num_states,
-                                                          omp_threads,
+                                                          num_states,,
                                                           callback=callback)
     else:
         logger.info('Running GPU search: Jh.shape=%s, num_states=%d, chunk_size=%d',
