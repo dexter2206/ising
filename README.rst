@@ -13,8 +13,8 @@ Installation
 -------------
 If you are running Linux and are interested in CPU-only implementation, you can install **Ising** from Python Package Index.
 
-```text
-pip install ising
-```
+.. code-block:: shell-session
+
+   pip install ising
 
 For other installation options, including building with CUDA support, please visit the official documentation.
