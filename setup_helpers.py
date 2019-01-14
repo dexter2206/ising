@@ -47,7 +47,7 @@ class BuildExtCommand(build_ext):
         cpu_search_ext = [ext for ext in self.extensions if 'isingcpu' in ext.name][0]
         cpu_search_ext.extra_f90_compile_args = cfg['fortran_compile_args']['common'] + base_args
         cpu_search_ext.libraries = cfg['libraries']
-        cpu_search_ext.library_dirs += [find_cuda_lib_dir()]
+#        cpu_search_ext.library_dirs += [find_cuda_lib_dir()]
         cpu_search_ext.extra_link_args += cfg.get('link_args', [])
         build_ext.build_extensions(self)
 

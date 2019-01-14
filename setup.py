@@ -7,9 +7,13 @@ from setup_helpers import BuildExtCommand
 set_verbosity(1)
 
 CPU_SEARCH_EXT = Extension('isingcpu',
-                           sources=['./ising/ext_sources/bucketSelectCPU.cu',
+                           extra_compile_args=['-fPIC',
+                                               '-fopenmp',
+                                               '-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP',
+                                               '-lstdc++'],
+                           sources=['./ising/ext_sources/bucketSelectCPU.cpp',
                                     './ising/ext_sources/bucketselectcpu.f90',
-                                    './ising/ext_sources/cpucsort.cu',
+                                    './ising/ext_sources/cpucsort.cpp',
                                     './ising/ext_sources/cpu_thrust_sort.f90',
                                     './ising/ext_sources/cpusearch.pyf',
                                     './ising/ext_sources/cpusearch.f90'])

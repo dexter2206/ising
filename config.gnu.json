@@ -18,5 +18,5 @@
 		  "-pedantic",
 		  "-Wl,--no-as-needed"]
     },
-    "libraries": ["stdc++", "cuda", "cudart", "gomp", "pthread", "m", "dl"]
+    "libraries": ["stdc++", "gomp", "pthread", "m", "dl", "gfortran"]
 }
