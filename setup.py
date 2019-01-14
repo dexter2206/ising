@@ -1,10 +1,14 @@
-"""Setup file for bruteforce package."""
+"""Ising: a Python package for exactly solving abritrary Ising model instances using exhaustive search."""
+
 from setuptools import find_packages # pylint: disable=unused-import
 from numpy.distutils.core import setup, Extension
 from numpy.distutils.log import set_verbosity
 from setup_helpers import BuildExtCommand
 
 set_verbosity(1)
+
+with open('README.rst') as readme:
+    LONG_DESCRIPTION = readme.read()
 
 CPU_SEARCH_EXT = Extension('isingcpu',
                            extra_compile_args=['-fPIC',
@@ -35,6 +39,8 @@ EXTENSIONS = [CPU_SEARCH_EXT, GPU_SEARCH_EXT]
 setup(
     use_scm_version=True,
     name='ising',
+    description=__doc__,
+    long_description=LONG_DESCRIPTION,
     cmdclass={'build_ext': BuildExtCommand},
     setup_requires=['setuptools_scm'],
     install_requires=['numpy>=0.16.0', 'psutil', 'progressbar2', 'future'],
