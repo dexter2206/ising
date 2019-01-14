@@ -5,7 +5,7 @@ set -e -x
 # Compile wheels
 for PYBIN in /opt/python/*/bin; do
     "${PYBIN}/pip" install numpy
-    CPATH=$CPATH:/ising/thrust "${PYBIN}/pip" wheel /ising/ -w wheelhouse/
+    CPATH=$CPATH:/ising/thrust "${PYBIN}/pip" wheel /ising/ -w /ising/wheelhouse/
 done
 
 ls /ising/wheelhouse
