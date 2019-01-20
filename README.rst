@@ -28,3 +28,22 @@ If you are running Linux and are interested in CPU-only implementation, you can 
 For other installation options, including building with CUDA support, please visit the official documentation_.
 
 .. _documentation: https://ising.readthedocs.io/en/latest/
+
+Usage example
+--------------
+The below example finds 4 lowest energy states of the Ising model defined by
+
+.. math::
+
+   H(s_0, s_1, s_2) = -2s_0s_1 + 3s_1s_2 + 2.5s_2s_3 -s_0
+   
+.. code:: python
+
+	  import ising
+
+	  graph = {(0, 1): 2, (1, 2): -3, (2, 3): 2.5, (0, 0): 1}
+
+	  result = ising.search(graph, num_states=4)
+	  print(result.energies)
+      
+For advanced usage, including GPU support and tweaking execution parameters see documentation_.
