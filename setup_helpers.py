@@ -33,6 +33,14 @@ class BuildExtCommand(build_ext):
         fcompiler = self.fcompiler or 'gnu95'
         customize_compiler_for_nvcc(self.compiler)
 
+        try:
+            cuda_home = find_cuda_home()
+            self.compiler.has_nvcc = True
+            for ext in self.extensions:
+                ext.include_dirs += [os.path.join(cuda_home, 'include')]
+        except ValueError:
+            self.compiler.has_nvcc = False
+
         if not self.usecuda:
             self._remove_gpu_search_ext(self.extensions)
 
@@ -106,7 +114,7 @@ def customize_compiler_for_nvcc(compiler):
     # inject our redefined _compile method into the class
     compiler._compile = _compile
 
-def find_cuda_lib_dir():
+def find_cuda_home():
     if 'CUDAHOME' in os.environ:
         cuda_home = os.environ['CUDAHOME']
     else:
@@ -114,4 +122,4 @@ def find_cuda_lib_dir():
         if not nvcc_path:
             raise ValueError("It appears that you don't have nvcc in your PATH.")
         cuda_home = os.path.dirname(os.path.dirname(nvcc_path))
-    return os.path.join(cuda_home, 'lib64')
+    return cuda_home
