@@ -44,22 +44,22 @@ Other supported input formats
 There are three formats supported by **ising**:
 
 - The dictionary format already presented in previous section.
-- The *coefficients list format*. In this format coefficients are specified as a list of lists, in hich each row is of the form ``[i, j, J_ij]`` or ``[i, i, h_i]`.`
-- The *matrix* format. In this format you specify your coefficients as a matrix in which diagonal elements correspond to :math:`h_i` and off-diagonal elements correspond to :math:`J_{ij}`. The matrix can either be a list of lists or a `numpy` array.
+- The *coefficients list format*. In this format coefficients are specified as a list of lists, where each row is of the form ``[i, j, J_ij]`` or ``[i, i, h_i]`.`
+- The *matrix* format. In this format one specifies coefficients as a matrix where its diagonal elements correspond to :math:`h_i` and off-diagonal elements correspond to :math:`J_{ij}`. The matrix can either be a list of lists or a `numpy` array.
 
-Putting it in another way, here are equivalent ways of specifying graph from the above basic example
+To summarize, here are three equivalent ways to specify the problem graph
 
 .. code:: python
 
-	  # coefficients list format
+	  # 1. coefficients list format
           graph = [[0, 1, 2], [1, 2, -3], [0, 0, 1], [2, 3, 2.5]],
-	  # matrix format: as list of lists or numpy array
+	  # 2. & 3. matrix format: as list of lists or numpy array
           graph = [[1, 2, 0, 0], [0, 0, -3, 0], [0, 0, 0, 2.5], [0, 0, 0, 0]],
           graph = np.array([[1, 2, 0, 0], [0, 0, -3, 0], [0, 0, 0, 2.5], [0, 0, 0, 0]]),
 
-Note that the *matrix* format requires your spins to be labelled with :math:`0, \ldots, n`, other two formats are not restricted in this way.
+Note that the *matrix* format requires spins variables to be labelled with :math:`0, \ldots, n`, other two formats are not restricted in this way.
 
-Also note that since both :math:`J_{ij}` and :math:`J_{ji}` can be specified in all the formats it does not matter which one is chosen. In fact, if one chooses to specify both coefficients, both of them will be used. Therefore, using the following graphs would yield the same result as the previous example:
+Since both couplings :math:`J_{ij}` and :math:`J_{ji}` can be specified in all three formats, it does not matter which one is chosen. In fact, if one provides both coefficients, both will be used. Therefore, specifing the following graphs would yield the same result as the previous example:
 
 .. code:: python
 	  
@@ -71,7 +71,7 @@ Also note that since both :math:`J_{ij}` and :math:`J_{ji}` can be specified in 
 Tweaking execution
 ------------------
 
-You can use the following keyword arguments to ``ising.search`` to tweak its execution:
+One can use the following keyword arguments to ``ising.search`` to tweak its execution:
 
 - ``num_states``: integer specifying how many low-energy states should be found.
 - ``method``: indicating whether CPU (``method='CPU'``) or GPU (``method='GPU'``) implementation should be used. If not given, CPU implementation is used by default.
