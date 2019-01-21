@@ -4,7 +4,7 @@ User guide
 Introduction
 ---------------------------
 
-The **ising** package allows to find a ground state (or, more generally, low energy spectrum) of an arbitrary Ising model. That is, it allows you to find the minimum of the following energy function
+The **ising** package allows to find a ground state (or, more generally, low energy spectrum) of an arbitrary spin-glass Ising model. That is, it allows one to find the minimum of the following energy function
 
 .. math::
 
@@ -15,14 +15,14 @@ where :math:`J_{ij}` and :math:`h_i` are arbitrary real coefficients and variabl
 Basic usage
 -----------
 
-The main functionallity of **ising** package is wrapped in ``ising.search`` function. As an example, suppose you want to find 4 lowest energy states of the following Ising model
+The main functionallity of **ising** package is wrapped in ``ising.search`` function. As an example, suppose one would like to to find four lowest energy states given the following problem Hamiltonian
 
 
 .. math::
 
    H(s_0, s_1, s_2) = -2s_0s_1 + 3s_1s_2 + 2.5s_2s_3 -s_0
 
-In that case you could run ``ising.search`` as follows
+In that case one can run ``ising.search`` as follows
 
 .. code:: python
 
@@ -35,13 +35,11 @@ In that case you could run ``ising.search`` as follows
 
 Note how the above model is specified as a dictionary:
 
-- :math:`J_{ij}` are specified as entries with key ``(i, j)``.
-- :math:`h_i` are specified as entries with key ``(i, i)``.
+- :math:`J_{ij}` are specified as entries with keys ``(i, j)``.
+- :math:`h_i` are specified as (diagonal) entries with keys ``(i, i)``.
 
-Read further to learn other input formats that **ising** can handle.
-
-Supported input formats
-------------------------
+Other supported input formats
+-----------------------------
 
 There are three formats supported by *ising*:
 
