@@ -3,21 +3,27 @@
 from setuptools import find_packages # pylint: disable=unused-import
 from numpy.distutils.core import setup, Extension
 from numpy.distutils.log import set_verbosity
-from setup_helpers import BuildExtCommand
+from setup_helpers import BuildExtCommand, find_cuda_home
 
 set_verbosity(1)
 
 with open('README.rst') as readme:
     LONG_DESCRIPTION = readme.read()
 
+try:
+    find_cuda_home()
+    CPP_EXT = '.cu'
+except ValueError:
+    CPP_EXT = '.cpp'
+
 CPU_SEARCH_EXT = Extension('isingcpu',
                            extra_compile_args=['-fPIC',
                                                '-fopenmp',
                                                '-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP',
                                                '-lstdc++'],
-                           sources=['./ising/ext_sources/bucketSelectCPU.cpp',
+                           sources=['./ising/ext_sources/bucketSelectCPU' + CPP_EXT,
                                     './ising/ext_sources/bucketselectcpu.f90',
-                                    './ising/ext_sources/cpucsort.cpp',
+                                    './ising/ext_sources/cpucsort' + CPP_EXT,
                                     './ising/ext_sources/cpu_thrust_sort.f90',
                                     './ising/ext_sources/cpusearch.pyf',
                                     './ising/ext_sources/cpusearch.f90'])
