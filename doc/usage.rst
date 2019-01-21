@@ -41,7 +41,7 @@ Note how the above model is specified as a dictionary:
 Other supported input formats
 -----------------------------
 
-There are three formats supported by *ising*:
+There are three formats supported by **ising**:
 
 - The dictionary format already presented in previous section.
 - The *coefficients list format*. In this format coefficients are specified as a list of lists, in hich each row is of the form ``[i, j, J_ij]`` or ``[i, i, h_i]`.`
@@ -59,7 +59,7 @@ Putting it in another way, here are equivalent ways of specifying graph from the
 
 Note that the *matrix* format requires your spins to be labelled with :math:`0, \ldots, n`, other two formats are not restricted in this way.
 
-Also note that since both :math:`J_{ij}` and :math:`J_{ji}` can be specified in all the formats it does not matter which one you choose. In fact, if you choose to specify both coefficients, both of them will be used. Therefore, using the following graphs would yield the same result as the previous example:
+Also note that since both :math:`J_{ij}` and :math:`J_{ji}` can be specified in all the formats it does not matter which one is chosen. In fact, if one chooses to specify both coefficients, both of them will be used. Therefore, using the following graphs would yield the same result as the previous example:
 
 .. code:: python
 	  
@@ -78,4 +78,4 @@ You can use the following keyword arguments to ``ising.search`` to tweak its exe
 - ``energies_only``: boolean indicating whether to return only energies (``True``) or also states corresponding to those energies (``False``). Default is ``False``, set it to ``True`` if you don't need states, as it should shorten the execution time.
 - ``chunk_size``: **ising** performs search in chunks of the size :math:`2^k`, where :math:`k` is choosen as a largest number such that computations are feasible on the host. You can tweak this value to use other exponent if you choose so.
 
-In addition, for CPU implementation, you can specify how many OMP threads will be used for computations using ``OMP_NUM_THREADS`` environmental variable.
+In addition, for CPU implementation, one can specify how many OMP threads will be used for computations using ``OMP_NUM_THREADS`` environmental variable.
