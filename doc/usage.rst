@@ -44,7 +44,7 @@ Other supported input formats
 There are three formats supported by **ising**:
 
 - The dictionary format already presented in previous section.
-- The *coefficients list format*. In this format coefficients are specified as a list of lists, where each row is of the form ``[i, j, J_ij]`` or ``[i, i, h_i]`.`
+- The *coefficients list format*. In this format coefficients are specified as a list of lists, where each row is of the form ``[i, j, J_ij]`` or ``[i, i, h_i]``.
 - The *matrix* format. In this format one specifies coefficients as a matrix where its diagonal elements correspond to :math:`h_i` and off-diagonal elements correspond to :math:`J_{ij}`. The matrix can either be a list of lists or a `numpy` array.
 
 To summarize, here are three equivalent ways to specify the problem graph
