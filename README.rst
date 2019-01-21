@@ -4,7 +4,7 @@ Ising
 
 Documentation: https://ising.readthedocs.io/en/latest/
 
-**Ising** is an open source package for exactly solving abritrary Ising model instances via exhaustive search. It can be used as an excellent tool for benchmarking other solvers or generating low energy spectra. The package is compatible with \*NIX systems (and in principle should work on Windows too). **Ising** supports parallel computation via OpenMP or GPU, if it was build with CUDA support.
+**Ising** is an open source package to solve abritrary spin-glass Ising models using exhaustive (brute force) search. It can be used as an excellent tool for benchmarking other solvers or generating low energy spectra. The package is compatible with \*NIX systems (and in principle should work on Windows too). **Ising** supports parallel computation via OpenMP or GPU, if it was build with CUDA support.
 
 Build status
 ------------
