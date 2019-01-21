@@ -84,18 +84,20 @@ def customize_compiler_for_nvcc(compiler):
     def _compile(obj, src, ext, cc_args, extra_postargs, pp_opts):
         if ext == '.cu':
             if 'cpu' in os.path.split(src)[1].lower():
-                postargs = ['-c',
-                            '-O3',
-                            '-Xcompiler',
-                            '-fPIC',
-                            '-Xcompiler',
-                            '-fopenmp',
-                            '-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP',
-                            '-lstdc++',
-                            '-lcudart']
+                postargs = [
+                    '-c',
+                    '-O3',
+                    '-Xcompiler',
+                    '-fPIC',
+                    '-Xcompiler',
+                    '-fopenmp',
+                    '-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP',
+                    '-lstdc++',
+                    '-lcudart']
             else:
-                postargs = ['-Xcompiler',
-                            '-fPIC']
+                postargs = [
+                    '-Xcompiler',
+                    '-fPIC']
 
             # use the cuda for .cu filese
             compiler.set_executable('compiler_so', 'nvcc')

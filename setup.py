@@ -17,26 +17,29 @@ except ValueError:
     CPP_EXT = '.cpp'
 
 CPU_SEARCH_EXT = Extension('isingcpu',
-                           extra_compile_args=['-fPIC',
-                                               '-fopenmp',
-                                               '-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP',
-                                               '-lstdc++'],
-                           sources=['./ising/ext_sources/bucketSelectCPU' + CPP_EXT,
-                                    './ising/ext_sources/bucketselectcpu.f90',
-                                    './ising/ext_sources/cpucsort' + CPP_EXT,
-                                    './ising/ext_sources/cpu_thrust_sort.f90',
-                                    './ising/ext_sources/cpusearch.pyf',
-                                    './ising/ext_sources/cpusearch.f90'])
+                           extra_compile_args=[
+                               '-fPIC',
+                               '-fopenmp',
+                               '-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP',
+                               '-lstdc++'],
+                           sources=[
+                               './ising/ext_sources/bucketSelectCPU' + CPP_EXT,
+                               './ising/ext_sources/bucketselectcpu.f90',
+                               './ising/ext_sources/cpucsort' + CPP_EXT,
+                               './ising/ext_sources/cpu_thrust_sort.f90',
+                               './ising/ext_sources/cpusearch.pyf',
+                               './ising/ext_sources/cpusearch.f90'])
 
 GPU_SEARCH_EXT = Extension('isinggpu',
-                           sources=['./ising/ext_sources/gpusearch.pyf',
-                                    './ising/ext_sources/gpucsort.cu',
-                                    './ising/ext_sources/global.f90',
-                                    './ising/ext_sources/gpu_thrust_sort.f90',
-                                    './ising/ext_sources/bucketSelect.cu',
-                                    './ising/ext_sources/bucketselect.f90',
-                                    './ising/ext_sources/search.f90',
-                                    './ising/ext_sources/gpusearch.f90'],
+                           sources=[
+                               './ising/ext_sources/gpusearch.pyf',
+                               './ising/ext_sources/gpucsort.cu',
+                               './ising/ext_sources/global.f90',
+                               './ising/ext_sources/gpu_thrust_sort.f90',
+                               './ising/ext_sources/bucketSelect.cu',
+                               './ising/ext_sources/bucketselect.f90',
+                               './ising/ext_sources/search.f90',
+                               './ising/ext_sources/gpusearch.f90'],
                            extra_link_args=['-Mcuda'],
                            extra_f90_compile_args=['-v', '-Mcuda,nordc'])
 
