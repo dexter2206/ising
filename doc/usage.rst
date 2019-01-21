@@ -51,10 +51,11 @@ To summarize, here are three equivalent ways to specify the problem graph
 
 .. code:: python
 
-	  # 1. coefficients list format
+	  # 1) coefficients list format
           graph = [[0, 1, 2], [1, 2, -3], [0, 0, 1], [2, 3, 2.5]],
-	  # 2. & 3. matrix format: as list of lists or numpy array
+	  # 2) matrix format: list of lists
           graph = [[1, 2, 0, 0], [0, 0, -3, 0], [0, 0, 0, 2.5], [0, 0, 0, 0]],
+	  # 3) matrix format: numpy array
           graph = np.array([[1, 2, 0, 0], [0, 0, -3, 0], [0, 0, 0, 2.5], [0, 0, 0, 0]]),
 
 Note that the *matrix* format requires spins variables to be labelled with :math:`0, \ldots, n`, other two formats are not restricted in this way.
@@ -73,9 +74,9 @@ Tweaking execution
 
 One can use the following keyword arguments to ``ising.search`` to tweak its execution:
 
-- ``num_states``: integer specifying how many low-energy states should be found.
-- ``method``: indicating whether CPU (``method='CPU'``) or GPU (``method='GPU'``) implementation should be used. If not given, CPU implementation is used by default.
-- ``energies_only``: boolean indicating whether to return only energies (``True``) or also states corresponding to those energies (``False``). Default is ``False``, set it to ``True`` if you don't need states, as it should shorten the execution time.
-- ``chunk_size``: **ising** performs search in chunks of the size :math:`2^k`, where :math:`k` is choosen as a largest number such that computations are feasible on the host. You can tweak this value to use other exponent if you choose so.
+- ``num_states``: an integer specifying how many low-energy states to find.
+- ``method``: a flag indicating whether CPU (``method='CPU'``, default) or GPU (``method='GPU'``) implementation to invoke. 
+- ``energies_only``: a boolean indicating whether both the energies and the states should be returned. Default is ``False``. 
+- ``chunk_size``: **ising** performs search in chunks of a given size :math:`2^k`, where :math:`k` is choosen as a largest number such that computations are feasible on the host. You can tweak this value to use other exponent if you choose so.
 
-In addition, for CPU implementation, one can specify how many OMP threads will be used for computations using ``OMP_NUM_THREADS`` environmental variable.
+In addition, when executing the CPU implementation, one can specify how many OMP threads to use for computations using ``OMP_NUM_THREADS`` environmental variable.
