@@ -86,8 +86,6 @@ def customize_compiler_for_nvcc(compiler):
             if 'cpu' in os.path.split(src)[1].lower():
                 postargs = ['-c',
                             '-O3',
-                            '-arch sm_60',
-                            '--compiler-options -fPIC',
                             '-Xcompiler',
                             '-fPIC',
                             '-Xcompiler',
@@ -96,9 +94,7 @@ def customize_compiler_for_nvcc(compiler):
                             '-lstdc++',
                             '-lcudart']
             else:
-                postargs = ['-arch sm_70',
-                            '--compiler-options', '-fPIC',
-                            '-Xcompiler',
+                postargs = ['-Xcompiler',
                             '-fPIC']
 
             # use the cuda for .cu filese
