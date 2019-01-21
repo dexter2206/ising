@@ -77,6 +77,6 @@ One can use the following keyword arguments to ``ising.search`` to tweak its exe
 - ``num_states``: an integer specifying how many low-energy states to find.
 - ``method``: a flag indicating whether CPU (``method='CPU'``, default) or GPU (``method='GPU'``) implementation to invoke. 
 - ``energies_only``: a boolean indicating whether both the energies and the states should be returned. Default is ``False``. 
-- ``chunk_size``: **ising** performs search in chunks of a given size :math:`2^k`, where :math:`k` is choosen as a largest number such that computations are feasible on the host. You can tweak this value to use other exponent if you choose so.
+- ``chunk_size``: To fit into the host memory, **ising** performs search in fixed chunks of a given size :math:`2^chunk_size`.
 
 In addition, when executing the CPU implementation, one can specify how many OMP threads to use for computations using ``OMP_NUM_THREADS`` environmental variable.
