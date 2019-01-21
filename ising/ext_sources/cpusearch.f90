@@ -14,8 +14,7 @@ contains
        sweep_size, &       ! 2 ** sweep_size states will be searched at once
        energies_out, &     ! Array to store lowest energies in
        states_out, &       ! Array to store states correspondingx to lo_energies
-       how_many, &         ! How many energies to keep track of?
-       omp_threads)        ! how many OMP threads to use
+       how_many)           ! How many energies to keep track of?
 
     use omp_lib
     use types
@@ -27,7 +26,7 @@ contains
     
     integer(ik), intent(inout) :: how_many
     real(wp), intent(in) :: Jh(no_bits, no_bits)
-    integer, intent(in) :: omp_threads, sweep_size, no_bits
+    integer, intent(in) :: sweep_size, no_bits
     real(wp), intent(out) :: energies_out(how_many)
     integer(ik), intent(out) :: states_out(how_many)
     real(wp), allocatable :: lowest(:)
@@ -80,8 +79,7 @@ contains
        no_bits, &          ! Number of bits
        sweep_size, &       ! 2 ** sweep_size states will be searched at once
        energies_out, &     ! Array to store lowest energies in
-       how_many, &         ! How many energies to keep track of?
-       omp_threads)        ! how many OMP threads to use
+       how_many)           ! How many energies to keep track of?
 
     use omp_lib
     use types
@@ -93,7 +91,7 @@ contains
     
     integer(ik), intent(inout) :: how_many
     real(wp), intent(in) :: Jh(no_bits, no_bits)
-    integer, intent(in) :: omp_threads, sweep_size, no_bits
+    integer, intent(in) :: sweep_size, no_bits
     real(wp), intent(out) :: energies_out(how_many)
     real(wp), allocatable :: lowest(:)
     real(wp), allocatable :: energies(:)

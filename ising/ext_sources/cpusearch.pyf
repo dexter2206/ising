@@ -17,7 +17,7 @@ python module isingcpu ! in
             integer, parameter,optional :: wp=kind(1.0d0)
         end module types
         module cpusearch ! in :f_cpu:cpusearch.f90
-            subroutine find_lowest(jh,no_bits,sweep_size,energies_out,states_out,how_many,omp_threads) ! in :f_cpu:cpusearch.f90:cpusearch
+            subroutine find_lowest(jh,no_bits,sweep_size,energies_out,states_out,how_many) ! in :f_cpu:cpusearch.f90:cpusearch
                 use omp_lib
                 use types
                 use find_lowest__user__routines
@@ -27,11 +27,10 @@ python module isingcpu ! in
                 real(kind=8) dimension(how_many),intent(out),depend(how_many) :: energies_out
                 integer(kind=8) dimension(how_many),intent(out),depend(how_many) :: states_out
                 integer(kind=8) intent(inout) :: how_many
-                integer intent(in) :: omp_threads
                 intent(callback) callback
                 external callback
               end subroutine find_lowest
-            subroutine find_lowest_energies_only(jh,no_bits,sweep_size,energies_out,how_many,omp_threads) ! in :f_cpu:cpusearch.f90:cpusearch
+            subroutine find_lowest_energies_only(jh,no_bits,sweep_size,energies_out,how_many) ! in :f_cpu:cpusearch.f90:cpusearch
                 use omp_lib
                 use types
                 use find_lowest__user__routines
@@ -40,7 +39,6 @@ python module isingcpu ! in
                 integer intent(in) :: sweep_size
                 real(kind=8) dimension(how_many),intent(out),depend(how_many) :: energies_out
                 integer(kind=8) intent(inout) :: how_many
-                integer intent(in) :: omp_threads
                 intent(callback) callback
                 external callback
               end subroutine find_lowest_energies_only
