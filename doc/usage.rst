@@ -4,25 +4,25 @@ User guide
 Introduction
 ---------------------------
 
-The **ising** package allows to find a ground state (or, more generally, low energy spectrum) of an arbitrary spin-glass Ising model. That is, it allows one to find the minimum of the following energy function
+The **ising** package allows to find a ground state (or, more generally, low energy spectrum) of an arbitrary spin-glass Ising model. That is, with **ising** one can to find the minimum of the following energy function (i.e. Hamiltonian)
 
 .. math::
 
    H(s_0, \ldots, s_n) = - \sum_{i, j=0}^n J_{ij} s_i s_j - \sum_{i=0}^n h_i s_i
 
-where :math:`J_{ij}` and :math:`h_i` are arbitrary real coefficients and variables :math:`s_i` under optimization are either :math:`-1` or :math:`1`.
+where :math:`J_{ij}` and :math:`h_i` are arbitrary real coefficients (interaction couplings and external biases, respectively) and variables :math:`s_i` can admit one of two values, either :math:`s_i=-1` or :math:`s_i=1`.
 
 Basic usage
 -----------
 
-The main functionallity of **ising** package is wrapped in ``ising.search`` function. As an example, suppose one would like to to find four lowest energy states given the following problem Hamiltonian
+The main functionallity of the **ising** package is wrapped in the ``ising.search`` function. For instance, suppose one would like to to find four lowest energy states given the following problem Hamiltonian,
 
 
 .. math::
 
    H(s_0, s_1, s_2) = -2s_0s_1 + 3s_1s_2 + 2.5s_2s_3 -s_0
 
-In that case one can run ``ising.search`` as follows
+To that end, one can simply run ``ising.search`` as follows
 
 .. code:: python
 
@@ -33,10 +33,10 @@ In that case one can run ``ising.search`` as follows
 	  result = ising.search(graph, num_states=4)
 	  print(result.energies)
 
-Note how the above model is specified as a dictionary:
+Note how the above model is defined using a dictionary:
 
-- :math:`J_{ij}` are specified as entries with keys ``(i, j)``.
-- :math:`h_i` are specified as (diagonal) entries with keys ``(i, i)``.
+- Couplings, :math:`J_{ij}`, are specified as its entries with the corresponding keys being ``(i, j)``.
+- Similarly, biases :math:`h_i` are provided as the diagonal entries whose keys are ``(i, i)``.
 
 Other supported input formats
 -----------------------------
