@@ -25,7 +25,7 @@ contains
     integer(ik), allocatable, device :: lowest_states_d(:), states_d(:)
     real(wp), allocatable, device :: Jh_d(:,:)
     integer(ik) :: idx, m, istat
-
+    integer :: ierrSync, ierrAsync
     !f2py intent(callback) callback
     external :: callback
 
@@ -45,6 +45,11 @@ contains
        idx = (m-1_ik) * d**sweep_size - 1_ik
        call search<<<grid,tBlock>>>(Jh_d, no_bits, sweep_size, energies_d, states_d, idx)
 
+       ierrSync = cudaGetLastError()
+       ierrAsync = cudaDeviceSynchronize()
+       if (ierrSync /= cudaSuccess) write(*,*) "Search kernel error: ", cudaGetErrorString(ierrSync)
+       if (ierrAsync /= cudaSuccess) write(*,*) "Search kernel error:", cudaGetErrorString(ierrAsync)
+
        call top_k_int_by_key(states_d, energies_d, int(d ** sweep_size, kind=4), int(d** sweep_size-how_many+1, kind=4), int(40, kind=4), int(1024, kind=4))
 
        if (m == 1) then
@@ -52,9 +57,9 @@ contains
           istat = cudaMemcpy(lowest_states_d, states_d, int(how_many, kind=4))
        else
           istat = cudaMemcpy(lowest_d(how_many+1: 2 * how_many), energies_d, int(how_many, kind=4))
-          istat = cudaMemcpy(lowest_states_d(how_many+1: 2 * how_many), states_d, int(how_many, kind=4))!          
+          istat = cudaMemcpy(lowest_states_d(how_many+1: 2 * how_many), states_d, int(how_many, kind=4))!
           call top_k_int_by_key(lowest_states_d, lowest_d, int(2 * how_many, kind=4), int(how_many+1, kind=4),int(40, kind=4), int(1024, kind=4))
-          
+
        end if
        call callback(m)
     end do
@@ -88,6 +93,7 @@ contains
     real(wp), allocatable, device :: lowest_d(:), energies_d(:)
     real(wp), allocatable, device :: Jh_d(:,:)
     integer(ik) :: idx, m, istat
+    integer :: ierrSync, ierrAsync
 
     !f2py intent(callback) callback
     external :: callback
@@ -110,6 +116,11 @@ contains
 
        call search_energies_only<<<grid,tBlock>>>(Jh_d, no_bits, sweep_size, energies_d, idx)
 
+       ierrSync = cudaGetLastError()
+       ierrAsync = cudaDeviceSynchronize()
+       if (ierrSync /= cudaSuccess) write(*,*) "Search kernel error: ", cudaGetErrorString(ierrSync)
+       if (ierrAsync /= cudaSuccess) write(*,*) "Search kernel error:", cudaGetErrorString(ierrAsync)
+
        call top_k_double(energies_d, int(d ** sweep_size, kind=4), int(d** sweep_size-how_many+1, kind=4), int(40, kind=4), int(1024, kind=4))
 
        if (m == 1) then
@@ -120,7 +131,7 @@ contains
        end if
        call callback(m)
     end do
-    
+
     call thrust_sort(lowest_d, int(how_many, kind=4))
     energies_out(1:how_many) = lowest_d(1:how_many)
 
