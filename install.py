@@ -26,6 +26,11 @@ def main():
                         action='store_true')
 
     cmd_args = parser.parse_args()
+
+    # Override compiler if --usecuda is provided
+    if cmd_args.usecuda:
+        cmd_args.fcompiler='pgi'
+
     args = ['python', 'setup.py', 'build_ext', '--fcompiler=' + FCOMPILER_MAP[cmd_args.fcompiler]]
     if cmd_args.debug:
         args += ['--debug']
