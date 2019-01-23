@@ -45,7 +45,12 @@ class BuildExtCommand(build_ext):
 
         if not self.usecuda:
             self._remove_gpu_search_ext(self.extensions)
-
+        else:
+            cuda_ver = get_cuda_version()
+            for ext in self.extensions:
+                if 'isinggpu' in ext.name:
+                    ext.extra_f90_compile_args.append('-Mcuda=nordc,cuda'+cuda_ver)
+                ext.extra_link_args.append('-Mcuda=cuda'+cuda_ver)
         with open(CONFIG_MAP[fcompiler], 'rt') as cfg_file:
             cfg = json.load(cfg_file)
 

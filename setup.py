@@ -39,9 +39,7 @@ GPU_SEARCH_EXT = Extension('isinggpu',
                                './ising/ext_sources/bucketSelect.cu',
                                './ising/ext_sources/bucketselect.f90',
                                './ising/ext_sources/search.f90',
-                               './ising/ext_sources/gpusearch.f90'],
-                           extra_link_args=['-Mcuda'],
-                           extra_f90_compile_args=['-v', '-Mcuda,nordc'])
+                               './ising/ext_sources/gpusearch.f90'])
 
 EXTENSIONS = [CPU_SEARCH_EXT, GPU_SEARCH_EXT]
 
