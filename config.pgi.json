@@ -2,6 +2,7 @@
     "fortran_compile_args": {
 	"common": ["-mp",
 		   "-Mfree",
+		   "-fpic",
 		   "-Mpreprocess"],
 	"optimal": ["-O4",
 		    "-fast",
