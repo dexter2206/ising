@@ -9,8 +9,14 @@ FCOMPILER_MAP = {'pgi': 'pg',
                  'intel': 'intelem',
                  'gfortran': 'gnu95'}
 
+UNSAFE_FLAGS = ['F90FLAGS', 'F90', 'FFLAGS']
+
 def main():
     """Entry point of this script."""
+    for key in UNSAFE_FLAGS:
+        if key in os.environ:
+            del os.environ[key]
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--fcompiler', choices=['pgi', 'intel', 'gfortran'],
                         help='Fortran compiler to use')
