@@ -2,6 +2,8 @@
 from distutils.spawn import find_executable
 import json
 import os
+import re
+import subprocess
 import sys
 from numpy.distutils.command.build_ext import build_ext
 
@@ -121,3 +123,9 @@ def find_cuda_home():
             raise ValueError("It appears that you don't have nvcc in your PATH.")
         cuda_home = os.path.dirname(os.path.dirname(nvcc_path))
     return cuda_home
+
+def get_cuda_version():
+    nvcc_proc = subprocess.Popen(['nvcc', '--version'], stdout=subprocess.PIPE)
+    nvcc_proc.wait()
+    nvcc_version_string = nvcc_proc.stdout.read()
+    return next(iter(re.search(r'release (\d+\.\d+)', nvcc_version_string).groups()))
