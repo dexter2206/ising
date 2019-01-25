@@ -1,6 +1,6 @@
 Ising
 ============
-\K. Jałowiecki, M. Rams and B. Gardas, Brute-forcing spin-glass problems with CUDA", in preparation.
+\K. Jałowiecki, M. Rams and B. Gardas, "Brute-forcing spin-glass problems with CUDA", in preparation.
 
 Documentation: https://ising.readthedocs.io/en/latest/
 
