@@ -132,5 +132,5 @@ def find_cuda_home():
 def get_cuda_version():
     nvcc_proc = subprocess.Popen(['nvcc', '--version'], stdout=subprocess.PIPE)
     nvcc_proc.wait()
-    nvcc_version_string = nvcc_proc.stdout.read()
+    nvcc_version_string = nvcc_proc.stdout.read().decode()
     return next(iter(re.search(r'release (\d+\.\d+)', nvcc_version_string).groups()))
