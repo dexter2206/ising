@@ -94,7 +94,7 @@ def search(graph, num_states=10, energies_only=False, **kwargs):
         pbar.finish()
     if energies_only:
         state_reprs = None
-    return EnergiesAndStates(states=state_reprs, energies=energies + const)
+    return EnergiesAndStates(raw_states=state_reprs, labels=labels, energies=energies + const)
 
 def dummy_callback(_):
     """Dummy callback doing nothing."""

@@ -6,7 +6,18 @@ from future import utils
 import logging
 import numpy
 
-EnergiesAndStates = namedtuple('EnergiesAndStates', ['states', 'energies'])
+_EnergiesAndStates = namedtuple('EnergiesAndStates', ['raw_states', 'labels', 'energies'])
+
+class EnergiesAndStates(_EnergiesAndStates):
+    """Representation of computation results."""
+
+    @property
+    def states(self):
+        if self.raw_states is None:
+            raise ValueError('This object contains only energies.')
+        return (decode_state(raw_state, len(self.labels),  self.labels)
+                for raw_state in self.raw_states)
+
 
 def decode_state(state_repr, no_spins, labels):
     """Decode integer representation of state into array +/- 1 array.
