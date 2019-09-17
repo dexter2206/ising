@@ -9,7 +9,7 @@ install:
 - docker pull $DOCKER_IMAGE
 script:
 - wget https://github.com/thrust/thrust/archive/1.8.1.zip
-- unzip thrust-1.8.1.zip
+- unzip 1.8.1.zip
 - docker run --rm -v `pwd`:/ising $DOCKER_IMAGE $PRE_CMD /ising/travisci/build-wheels.sh
 - ls wheelhouse/
 - echo $TWINE_PASSWORD
