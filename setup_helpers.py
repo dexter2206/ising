@@ -5,7 +5,7 @@ import os
 import re
 import subprocess
 import sys
-from numpy.distutils.command.build_ext import build_ext
+from Cython.Distutils import build_ext
 
 
 CONFIG_MAP = {

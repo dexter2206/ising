@@ -4,7 +4,7 @@ from setuptools import find_packages # pylint: disable=unused-import
 from numpy.distutils.core import setup, Extension
 from numpy.distutils.log import set_verbosity
 from setup_helpers import BuildExtCommand, find_cuda_home
-
+from Cython.Build import cythonize
 set_verbosity(1)
 
 with open('README.rst') as readme:
@@ -66,6 +66,12 @@ CPU_EXTENSION = Extension(
 
 EXTENSIONS = [CPU_EXTENSION]
 
+class BuildExtCommand(build_ext):
+    def build_extensions(self):
+        customize_compiler_for_nvcc(self.compiler)
+        build_ext.build_extensions(self)
+
+
 setup(
     use_scm_version=True,
     name='ising',
@@ -74,6 +80,6 @@ setup(
     cmdclass={'build_ext': BuildExtCommand},
     setup_requires=['setuptools_scm'],
     install_requires=['numpy>=0.16.0', 'psutil', 'progressbar2', 'future'],
-    ext_modules=EXTENSIONS,
+    ext_modules=cythonize(EXTENSIONS),
     packages=['ising']
 )
