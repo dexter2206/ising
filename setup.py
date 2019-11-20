@@ -63,6 +63,7 @@ CPU_EXTENSION = Extension(
         ]
     },
     include_dirs=[numpy_include, CUDA["include"], "cythontest/ext_sources"]
+)
 
 EXTENSIONS = [CPU_EXTENSION]
 
