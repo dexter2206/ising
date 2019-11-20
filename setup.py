@@ -47,7 +47,7 @@ EXTENSIONS = [CPU_SEARCH_EXT, GPU_SEARCH_EXT]
 CPU_EXTENSION = Extension(
     "isinggpu",
     sources=[
-        "ising/ext_sources/partition.cpp",
+        "ising/ext_sources/select.cpp",
         "ising/ext_sources/cpu_wrapper.pyx"
     ],
     libraries=["stdc++"],
