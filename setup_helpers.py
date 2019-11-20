@@ -73,51 +73,45 @@ class BuildExtCommand(build_ext):
                 ext_list.remove(ext)
                 break
 
-def customize_compiler_for_nvcc(compiler):
-    """Customize compiler so it can handle .cu files.
 
-    Except the few changes this is taken from https://github.com/rmcgibbo/npcuda-example.
-    """
+def customize_compiler_for_nvcc(self):
+    """inject deep into distutils to customize how the dispatch
+    to gcc/nvcc works.
+
+    If you subclass UnixCCompiler, it's not trivial to get your subclass
+    injected in, and still have the right customizations (i.e.
+    distutils.sysconfig.customize_compiler) run on it. So instead of going
+    the OO route, I have this. Note, it's kindof like a wierd functional
+    subclassing going on."""
+
     # tell the compiler it can processes .cu
-    compiler.src_extensions.append('.cu')
+    self.src_extensions.append('.cu')
 
     # save references to the default compiler_so and _comple methods
-    default_compiler_so = compiler.compiler_so
-    old_compile = compiler._compile
-    auto_depends = getattr(compiler, '_auto_depends', False)
+    default_compiler_so = self.compiler_so
+    super = self._compile
+
     # now redefine the _compile method. This gets executed for each
     # object but distutils doesn't have the ability to change compilers
     # based on source extension: we add it.
-    def _compile(obj, src, ext, cc_args, extra_postargs, pp_opts):
-        if ext == '.cu':
-            if 'cpu' in os.path.split(src)[1].lower():
-                postargs = [
-                    '-c',
-                    '-O3',
-                    '-Xcompiler',
-                    '-fPIC',
-                    '-Xcompiler',
-                    '-fopenmp',
-                    '-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP',
-                    '-lstdc++',
-                    '-lcudart']
-            else:
-                postargs = [
-                    '-Xcompiler',
-                    '-fPIC']
 
-            # use the cuda for .cu filese
-            compiler.set_executable('compiler_so', 'nvcc')
-            compiler._auto_depends = False
+    def _compile(obj, src, ext, cc_args, extra_postargs, pp_opts):
+        if os.path.splitext(src)[1] == '.cu':
+            # use the cuda for .cu files
+            self.set_executable('compiler_so', CUDA['nvcc'])
+            # use only a subset of the extra_postargs, which are 1-1 translated
+            # from the extra_compile_args in the Extension class
+            postargs = extra_postargs['nvcc']
         else:
-            compiler.set_executable('compiler_so', default_compiler_so)
-            postargs = extra_postargs
-        old_compile(obj, src, ext, cc_args, postargs, pp_opts)
+            postargs = extra_postargs['gcc']
+
+        super(obj, src, ext, cc_args, postargs, pp_opts)
         # reset the default compiler_so, which we might have changed for cuda
-        compiler.compiler_so = default_compiler_so
-        setattr(compiler, '_auto_depends', auto_depends)
+        self.compiler_so = default_compiler_so
+
     # inject our redefined _compile method into the class
-    compiler._compile = _compile
+    self._compile = _compile
+
 
 def find_cuda_home():
     if 'CUDAHOME' in os.environ:
