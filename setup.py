@@ -43,6 +43,29 @@ GPU_SEARCH_EXT = Extension('isinggpu',
 
 EXTENSIONS = [CPU_SEARCH_EXT, GPU_SEARCH_EXT]
 
+
+CPU_EXTENSION = Extension(
+    "isinggpu",
+    sources=[
+        "ising/ext_sources/partition.cpp",
+        "ising/ext_sources/cpu_wrapper.pyx"
+    ],
+    libraries=["stdc++"],
+    language="c++",
+    extra_compile_args={
+        "nvcc": [],
+        "gcc": [
+            "-c",
+            "-O3",
+            "-fPIC",
+            "-fopenmp",
+            "-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP",
+        ]
+    },
+    include_dirs=[numpy_include, CUDA["include"], "cythontest/ext_sources"]
+
+EXTENSIONS = [CPU_EXTENSION]
+
 setup(
     use_scm_version=True,
     name='ising',
