@@ -1,6 +1,7 @@
 """Ising: a Python package for exactly solving abritrary Ising model instances using exhaustive search."""
 
 from setuptools import find_packages # pylint: disable=unused-import
+import numpy as np
 from numpy.distutils.core import setup, Extension
 from numpy.distutils.log import set_verbosity
 from setup_helpers import BuildExtCommand, find_cuda_home
@@ -16,6 +17,11 @@ try:
 except ValueError:
     CPP_EXT = '.cpp'
 
+# Obtain the numpy include directory.  This logic works across numpy versions.
+try:
+    numpy_include = np.get_include()
+except AttributeError:
+    numpy_include = np.get_numpy_include()
 CPU_SEARCH_EXT = Extension('isingcpu',
                            extra_compile_args=[
                                '-fPIC',
