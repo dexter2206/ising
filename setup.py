@@ -1,5 +1,6 @@
 """Ising: a Python package for exactly solving abritrary Ising model instances using exhaustive search."""
-
+import os
+from os.path import join as pjoin
 from setuptools import find_packages # pylint: disable=unused-import
 import numpy as np
 from numpy.distutils.core import setup, Extension
