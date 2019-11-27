@@ -1,14 +1,15 @@
 """Ising: a package for exactly solving abritrary Ising model instances using exhaustive search."""
 import os
 from os.path import join as pjoin
-from setuptools import setup, find_packages # pylint: disable=unused-import
+from setuptools import setup, find_packages  # pylint: disable=unused-import
 import numpy as np
 from distutils.extension import Extension
-#from setup_helpers import BuildExtCommand, find_cuda_home, customize_compiler_for_nvcc
+
+# from setup_helpers import BuildExtCommand, find_cuda_home, customize_compiler_for_nvcc
 from Cython.Distutils import build_ext
 from Cython.Build import cythonize
 
-with open('README.rst') as readme:
+with open("README.rst") as readme:
     LONG_DESCRIPTION = readme.read()
 
 # Obtain the numpy include directory.  This logic works across numpy versions.
@@ -20,12 +21,13 @@ except AttributeError:
 
 def find_in_path(name, path):
     "Find a file in a search path"
-    #adapted fom http://code.activestate.com/recipes/52224-find-a-file-given-a-search-path/
+    # adapted fom http://code.activestate.com/recipes/52224-find-a-file-given-a-search-path/
     for dir in path.split(os.pathsep):
         binpath = pjoin(dir, name)
         if os.path.exists(binpath):
             return os.path.abspath(binpath)
     return None
+
 
 def locate_cuda():
     """Locate the CUDA environment on the system
@@ -38,25 +40,33 @@ def locate_cuda():
     """
 
     # first check if the CUDAHOME env variable is in use
-    if 'CUDAHOME' in os.environ:
-        home = os.environ['CUDAHOME']
-        nvcc = pjoin(home, 'bin', 'nvcc')
+    if "CUDAHOME" in os.environ:
+        home = os.environ["CUDAHOME"]
+        nvcc = pjoin(home, "bin", "nvcc")
     else:
         # otherwise, search the PATH for NVCC
-        nvcc = find_in_path('nvcc', os.environ['PATH'])
+        nvcc = find_in_path("nvcc", os.environ["PATH"])
         if nvcc is None:
-            raise EnvironmentError('The nvcc binary could not be '
-                'located in your $PATH. Either add it to your path, or set $CUDAHOME')
+            raise EnvironmentError(
+                "The nvcc binary could not be "
+                "located in your $PATH. Either add it to your path, or set $CUDAHOME"
+            )
         home = os.path.dirname(os.path.dirname(nvcc))
 
-    cudaconfig = {'home':home, 'nvcc':nvcc,
-                  'include': pjoin(home, 'include'),
-                  'lib64': pjoin(home, 'lib64')}
+    cudaconfig = {
+        "home": home,
+        "nvcc": nvcc,
+        "include": pjoin(home, "include"),
+        "lib64": pjoin(home, "lib64"),
+    }
     for k, v in iter(cudaconfig.items()):
         if not os.path.exists(v):
-            raise EnvironmentError('The CUDA %s path could not be located in %s' % (k, v))
+            raise EnvironmentError(
+                "The CUDA %s path could not be located in %s" % (k, v)
+            )
 
     return cudaconfig
+
 
 CUDA = locate_cuda()
 
@@ -72,7 +82,7 @@ def customize_compiler_for_nvcc(self):
     subclassing going on."""
 
     # tell the compiler it can processes .cu
-    self.src_extensions.append('.cu')
+    self.src_extensions.append(".cu")
 
     # save references to the default compiler_so and _comple methods
     default_compiler_so = self.compiler_so
@@ -83,14 +93,14 @@ def customize_compiler_for_nvcc(self):
     # based on source extension: we add it.
 
     def _compile(obj, src, ext, cc_args, extra_postargs, pp_opts):
-        if os.path.splitext(src)[1] == '.cu':
+        if os.path.splitext(src)[1] == ".cu":
             # use the cuda for .cu files
-            self.set_executable('compiler_so', CUDA['nvcc'])
+            self.set_executable("compiler_so", CUDA["nvcc"])
             # use only a subset of the extra_postargs, which are 1-1 translated
             # from the extra_compile_args in the Extension class
-            postargs = extra_postargs['nvcc']
+            postargs = extra_postargs["nvcc"]
         else:
-            postargs = extra_postargs['gcc']
+            postargs = extra_postargs["gcc"]
 
         super(obj, src, ext, cc_args, postargs, pp_opts)
         # reset the default compiler_so, which we might have changed for cuda
@@ -102,10 +112,7 @@ def customize_compiler_for_nvcc(self):
 
 CPU_EXTENSION = Extension(
     "isingcpu",
-    sources=[
-        "ising/ext_sources/select.cpp",
-        "ising/ext_sources/cpu_wrapper.pyx"
-    ],
+    sources=["ising/ext_sources/select.cpp", "ising/ext_sources/cpu_wrapper.pyx"],
     libraries=["stdc++", "omp"],
     language="c++",
     extra_compile_args={
@@ -116,9 +123,9 @@ CPU_EXTENSION = Extension(
             "-fPIC",
             "-fopenmp",
             "-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP",
-        ]
+        ],
     },
-    include_dirs=[numpy_include, CUDA["include"], "ising/ext_sources"]
+    include_dirs=[numpy_include, CUDA["include"], "ising/ext_sources"],
 )
 
 GPU_EXTENSION = Extension(
@@ -126,16 +133,16 @@ GPU_EXTENSION = Extension(
     sources=[
         "ising/ext_sources/kernels.cu",
         "ising/ext_sources/search.cu",
-        "ising/ext_sources/gpu_wrapper.pyx"
+        "ising/ext_sources/gpu_wrapper.pyx",
     ],
     libraries=["stdc++", "cudart"],
-    library_dirs = [CUDA['lib64']],
+    library_dirs=[CUDA["lib64"]],
     language="c++",
     extra_compile_args={
         "nvcc": ["--ptxas-options=-v", "-c", "--compiler-options", "'-fPIC'"],
-        "gcc": []
+        "gcc": [],
     },
-    include_dirs=[numpy_include, CUDA["include"], "ising/ext_sources"]
+    include_dirs=[numpy_include, CUDA["include"], "ising/ext_sources"],
 )
 
 EXTENSIONS = [CPU_EXTENSION, GPU_EXTENSION]
@@ -149,12 +156,12 @@ class BuildExtCommand(build_ext):
 
 setup(
     use_scm_version=True,
-    name='ising',
+    name="ising",
     description=__doc__,
     long_description=LONG_DESCRIPTION,
-    cmdclass={'build_ext': BuildExtCommand},
-    setup_requires=['setuptools_scm'],
-    install_requires=['numpy>=0.16.0', 'psutil', 'progressbar2', 'future'],
+    cmdclass={"build_ext": BuildExtCommand},
+    setup_requires=["setuptools_scm"],
+    install_requires=["numpy>=0.16.0", "psutil", "progressbar2", "future"],
     ext_modules=cythonize(EXTENSIONS),
-    packages=['ising']
+    packages=["ising"],
 )
