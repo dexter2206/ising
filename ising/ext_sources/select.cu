@@ -422,68 +422,104 @@ T bucketSelectWrapper(T* d_vector, int length, int K, int blocks, int threads)
 
 }
 
+template <typename T>
+struct lt
+{
+  T pivot;
 
+  lt(T pivot)
+  {
+    this->pivot = pivot;
+  }
 
-extern "C" {
+  __host__ __device__
+  bool operator()(const T &x)
+  {
+    return x < pivot;
+  }
+};
+
+template <typename T>
+struct lt_by_key
+{
+  T pivot;
+
+  lt_by_key(T pivot)
+  {
+    this->pivot = pivot;
+  }
+
+  __host__ __device__
+  bool operator()(const thrust::tuple<int64_t, T> &x)
+  {
+    return thrust::get<1>(x) < pivot;
+  }
+};
+template <typename T>
 struct le
+{
+  T pivot;
+
+  le(T pivot)
   {
-    double pivot;
-
-    le(double pivot)
-    {
-      this->pivot = pivot;
-    }
-
-    __host__ __device__
-    bool operator()(const double &x)
-    {
-      return x <= pivot;
-    }
-  };
-
-  struct le_by_key
-  {
-    double pivot;
-
-    le_by_key(double pivot)
-    {
-      this->pivot = pivot;
-    }
-
-    __host__ __device__
-    bool operator()(const thrust::tuple<int64_t, double> &x)
-    {
-      return thrust::get<1>(x) <= pivot;
-    }
-  };
-
-  void partition_double(double *input, int64_t length, double pivot)
-  {
-    thrust::device_ptr<double> data(input);
-    le predicate(pivot);
-    thrust::partition(data, data+length, predicate);
+    this->pivot = pivot;
   }
 
-  int64_t partition_int_by_key(int64_t *values, double *keys, int64_t length, double pivot)
+  __host__ __device__
+  bool operator()(const T &x)
   {
-    le_by_key predicate(pivot);
-    thrust::device_ptr<int64_t> values_d(values);
-    thrust::device_ptr<double> keys_d(keys);
-    thrust::zip_iterator<thrust::tuple<thrust::device_ptr<int64_t>, thrust::device_ptr<double> > > start = thrust::make_zip_iterator(thrust::make_tuple(values_d, keys_d));
-    return thrust::partition(start, start+length, predicate) - start;
+    return x <= pivot;
   }
-  
-  void top_k_double(double* d_vector, int length, int k, int blocks, int threads) {
-    thrust::device_ptr<double> dp = thrust::min_element(thrust::device_ptr<double>(d_vector), thrust::device_ptr<double>(d_vector)+length);
-    double min, first;
-    thrust::copy(dp, dp+1, &min);
-    double pivot =  bucketSelectWrapper(d_vector, length, k, blocks, threads);
-    partition_double(d_vector, length, pivot);
+};
+
+template <typename T>
+struct le_by_key
+{
+  T pivot;
+
+  le_by_key(T pivot)
+  {
+    this->pivot = pivot;
   }
 
-  void top_k_int_by_key(int64_t* values, double* keys, int length, int k, int blocks, int threads) {
-    thrust::device_ptr<double> dp = thrust::min_element(thrust::device_ptr<double>(keys), thrust::device_ptr<double>(keys)+length);
-    double pivot =  bucketSelectWrapper(keys, length, k, blocks, threads);
-    partition_int_by_key(values, keys, length, pivot);
+  __host__ __device__
+  bool operator()(const thrust::tuple<int64_t, T> &x)
+  {
+    return thrust::get<1>(x) <= pivot;
   }
+};
+
+template <typename T>
+void partition(T *input, int64_t length, T pivot)
+{
+  thrust::device_ptr<T> data(input);
+  le<T> predicate_le(pivot);
+  lt<T> predicate_lt(pivot);
+  thrust::device_ptr<T> middle = thrust::partition(data, data+length, predicate_lt);
+  thrust::partition(middle, data+length, predicate_le);
+}
+
+template <typename T>
+int64_t partition_int_by_key(int64_t *values, T *keys, int64_t length, T pivot)
+{
+  le_by_key<T> predicate_le(pivot);
+  lt_by_key<T> predicate_lt(pivot);  
+  thrust::device_ptr<int64_t> d_values(values);
+  thrust::device_ptr<T> d_keys(keys);
+  thrust::zip_iterator<thrust::tuple<thrust::device_ptr<int64_t>, thrust::device_ptr<T> > > start = thrust::make_zip_iterator(thrust::make_tuple(d_values, d_keys));
+  thrust::zip_iterator<thrust::tuple<thrust::device_ptr<int64_t>, thrust::device_ptr<T> > > middle = thrust::partition(start, start+length, predicate_lt);
+  thrust::partition(middle, start+length, predicate_le);
+}
+
+template <typename T>
+void top_k(T* d_vector, int length, int k, int blocks, int threads)
+{
+  T pivot = bucketSelectWrapper(d_vector, length, k, blocks, threads);
+  partition(d_vector, length, pivot);
+}
+
+template <typename T>
+void top_k_int_by_key(int64_t* values, T* keys, int length, int k, int blocks, int threads) {
+  T pivot = bucketSelectWrapper(keys, length, k, blocks, threads);
+  partition_int_by_key(values, keys, length, pivot);
 }

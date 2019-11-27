@@ -21,6 +21,7 @@
 #include <omp.h>
 #include <iostream>
 #include <cstdlib>
+#include "select.h"
 using namespace std;
 
 
@@ -72,10 +73,15 @@ void assignBucket(T* d_vector, int length, int bucketNumbers, double slope, doub
 //this function reassigns elements to buckets
 template <typename T>
 void reassignBucket(T* d_vector, int *bucket, uint *bucketCount, const int bucketNumbers, const int length, const double slope, const double maximum, const double minimum, int Kbucket){
-  int i;
-  int bucketIndex;
+  int i;  
+#pragma omp parallel 
+  {  
 
-#pragma omp parallel for private(i, bucketIndex)
+  int bucketIndex;
+  int * thread_bucket_counts = NULL;
+  thread_bucket_counts = (int *) calloc(bucketNumbers, sizeof(int));
+  
+#pragma omp for
   for(i=0; i < length; i++) {
     if(bucket[i] != Kbucket){
       bucket[i] = bucketNumbers+1;
@@ -89,8 +95,17 @@ void reassignBucket(T* d_vector, int *bucket, uint *bucketCount, const int bucke
 	bucketIndex = bucketNumbers - 1;
       }
       bucket[i] = bucketIndex;
-      bucketCount[bucketIndex]++;
+      thread_bucket_counts[bucketIndex]++;
     }
+  }
+
+#pragma omp barrier
+ 
+    for(bucketIndex = 0; bucketIndex < bucketNumbers; bucketIndex++) {
+#pragma omp atomic
+      bucketCount[bucketIndex] += thread_bucket_counts[bucketIndex];
+    }
+    free(thread_bucket_counts);
   }
 }
 
@@ -113,7 +128,6 @@ void copyElement(T* d_vector, int length, int* elementArray, int bucket, T* newA
   inline int FindKBucket(uint *d_counter, uint *h_counter, const int num_buckets, const int k, uint * sum){
     memcpy(sum, d_counter, sizeof(uint));
     int Kbucket = 0;
-    
     if (sum[0]<k){
       memcpy(h_counter, d_counter, num_buckets * sizeof(uint));
       while ( (sum[0]<k) & (Kbucket<num_buckets-1)){
@@ -197,14 +211,12 @@ T phaseTwo(T* d_vector, int length, int K, double maxValue = 0, double minValue 
   Kbucket = FindKBucket(d_bucketCount, h_bucketCount, numBuckets, K, &sum);
 
   Kbucket_count = h_bucketCount[Kbucket];
-
+  
   //  cout << "Before while loop " << endl;
   while ( (Kbucket_count > 1) && (iter < 1000)){
     minValue = max(minValue, minValue + Kbucket/slope);
     maxValue = min(maxValue, minValue + 1/slope);
-
     K = K - sum + Kbucket_count;
-
     if ( maxValue - minValue > 0.0f ){
       slope = (numBuckets - 1)/(maxValue-minValue);
       memset(d_bucketCount, 0, sizeof(uint) * numBuckets);
@@ -213,7 +225,6 @@ T phaseTwo(T* d_vector, int length, int K, double maxValue = 0, double minValue 
       sum = 0;
       Kbucket = FindKBucket(d_bucketCount, h_bucketCount, numBuckets, K, &sum);
       Kbucket_count = h_bucketCount[Kbucket];
-
       iter++;
     }
     else{
@@ -222,6 +233,7 @@ T phaseTwo(T* d_vector, int length, int K, double maxValue = 0, double minValue 
       return maxValue;
     }
   }
+
   //  cout << "After while loop " << endl;
     GetKvalue(d_vector, elementToBucket, Kbucket, length, d_Kth_val);
     //    cout << "After getkvalue " << endl;
@@ -388,86 +400,117 @@ T bucketSelectWrapper(T* d_vector, int length, int K)
     }
   else
     {
-      kthValue = phaseOne(d_vector, length, K);
+      kthValue = phaseOne(d_vector, length, K);    
       return kthValue;
     }
 }
 
 
-
-extern "C" {
-  template <typename T>
-  struct le
-  {
-    T pivot;
-
-    le(T pivot)
-    {
-      this->pivot = pivot;
-    }
-
-    __host__
-    bool operator()(const T &x)
-    {
-      return x <= pivot;
-    }
-  };
-
-  template <typename T>
-  struct le_by_key
-  {
-    T pivot;
-
-    le_by_key(T pivot)
-    {
-      this->pivot = pivot;
-    }
-
-    __host__
-    bool operator()(const thrust::tuple<int64_t, T> &x)
-    {
-      return thrust::get<1>(x) <= pivot;
-    }
-  };
-
-  template <typename T>
-  void partition(T *input, int64_t length, T pivot)
-  {
-    le predicate(pivot);
-    thrust::partition(input, input+length, predicate);
-  }
-
-  template <typename T>
-  int64_t partition_int_by_key(int64_t *values, T *keys, int64_t length, T pivot)
-  {
-    le_by_key predicate(pivot);
-    thrust::zip_iterator<thrust::tuple<int64_t*, T*> > start = thrust::make_zip_iterator(thrust::make_tuple(values, keys));
-    return thrust::partition(start, start+length, predicate) - start;
-  }
-
+template <typename T>
+struct lt
+{
+  T pivot;
   
-  void top_k_double(double* d_vector, int length, int k) {
-    double pivot =  bucketSelectWrapper(d_vector, length, k);
-    partition_double(d_vector, length, pivot);
+  lt(T pivot)
+  {
+    this->pivot = pivot;
   }
 
-  void top_k_float(float* f_vector, int length, int k) {
-    float pivot =  bucketSelectWrapper(f_vector, length, k);
-    partition(f_vector, length, pivot);
+  __host__
+  bool operator()(const T &x)
+  {
+    return x < pivot;
+  }
+};
+
+template <typename T>
+struct lt_by_key
+{
+  T pivot;
+
+  lt_by_key(T pivot)
+  {
+    this->pivot = pivot;
   }
 
-    
-  void top_k_int_by_double_key(int64_t* values, double* keys, int length, int k) {
-    //    cout << " length: " << length << " k " << k << endl;
-    double pivot =  bucketSelectWrapper(keys, length, k);
-    //    cout << " after selection, moving to partition " << endl;
-    partition_int_by_key(values, keys, length, pivot);
+  __host__
+  bool operator()(const thrust::tuple<int64_t, T> &x)
+  {
+    return thrust::get<1>(x) < pivot;
+  }
+};
+
+template <typename T>
+struct le
+{
+  T pivot;
+  
+  le(T pivot)
+  {
+    this->pivot = pivot;
   }
 
-  void top_k_int_by_float_key(int64_t* values, float* keys, int length, int k) {
-    //    cout << " length: " << length << " k " << k << endl;
-    float pivot =  bucketSelectWrapper(keys, length, k);
-    //    cout << " after selection, moving to partition " << endl;
-    partition_int_by_key(values, keys, length, pivot);
-  }  
+  __host__
+  bool operator()(const T &x)
+  {
+    return x <= pivot;
+  }
+};
+
+template <typename T>
+struct le_by_key
+{
+  T pivot;
+
+  le_by_key(T pivot)
+  {
+    this->pivot = pivot;
+  }
+
+  __host__
+  bool operator()(const thrust::tuple<int64_t, T> &x)
+  {
+    return thrust::get<1>(x) <= pivot;
+  }
+};
+
+
+template <typename T>
+void partition(T *input, int64_t length, T pivot)
+{
+  le<T> predicate_le(pivot);
+  lt<T> predicate_lt(pivot);
+  T* middle = thrust::partition(input, input+length, predicate_lt);
+  thrust::partition(middle, input+length, predicate_le);
 }
+
+template <typename T>
+int64_t partition_int_by_key(int64_t *values, T *keys, int64_t length, T pivot)
+{
+  le_by_key<T> predicate_le(pivot);
+  lt_by_key<T> predicate_lt(pivot);  
+  thrust::zip_iterator<thrust::tuple<int64_t*, T*> > start = thrust::make_zip_iterator(thrust::make_tuple(values, keys));
+  thrust::zip_iterator<thrust::tuple<int64_t*, T*> > middle = thrust::partition(start, start+length, predicate_lt);
+  thrust::partition(middle, start+length, predicate_le);
+}
+
+template <typename T>
+void top_k(T* vector, int length, int k)
+{
+  T pivot =  bucketSelectWrapper(vector, length, k);
+  partition(vector, length, pivot);
+}
+
+
+template <typename T>
+void top_k_int_by_key(int64_t* values, T* keys, int length, int k) {
+  T pivot =  bucketSelectWrapper<T>(keys, length, k);
+  partition_int_by_key(values, keys, length, pivot);
+}
+
+
+template void top_k<float>(float* vector, int length, int k);
+template void top_k<double>(double* vector, int length, int k);
+
+template void top_k_int_by_key<float>(int64_t* values, float* keys, int length, int k);
+template void top_k_int_by_key<double>(int64_t* values, double* keys, int length, int k);
