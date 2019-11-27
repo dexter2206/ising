@@ -1,28 +1,31 @@
-"""Ising: a Python package for exactly solving abritrary Ising model instances using exhaustive search."""
+"""Ising: a package for exactly solving abritrary Ising model instances using exhaustive search."""
 import os
 from os.path import join as pjoin
-from setuptools import find_packages # pylint: disable=unused-import
+from setuptools import setup, find_packages # pylint: disable=unused-import
 import numpy as np
-from numpy.distutils.core import setup, Extension
-from numpy.distutils.log import set_verbosity
-from setup_helpers import BuildExtCommand, find_cuda_home
+from distutils.extension import Extension
+#from setup_helpers import BuildExtCommand, find_cuda_home, customize_compiler_for_nvcc
+from Cython.Distutils import build_ext
 from Cython.Build import cythonize
-set_verbosity(1)
 
 with open('README.rst') as readme:
     LONG_DESCRIPTION = readme.read()
-
-try:
-    find_cuda_home()
-    CPP_EXT = '.cu'
-except ValueError:
-    CPP_EXT = '.cpp'
 
 # Obtain the numpy include directory.  This logic works across numpy versions.
 try:
     numpy_include = np.get_include()
 except AttributeError:
     numpy_include = np.get_numpy_include()
+
+
+def find_in_path(name, path):
+    "Find a file in a search path"
+    #adapted fom http://code.activestate.com/recipes/52224-find-a-file-given-a-search-path/
+    for dir in path.split(os.pathsep):
+        binpath = pjoin(dir, name)
+        if os.path.exists(binpath):
+            return os.path.abspath(binpath)
+    return None
 
 def locate_cuda():
     """Locate the CUDA environment on the system
@@ -58,41 +61,52 @@ def locate_cuda():
 CUDA = locate_cuda()
 
 
-CPU_SEARCH_EXT = Extension('isingcpu',
-                           extra_compile_args=[
-                               '-fPIC',
-                               '-fopenmp',
-                               '-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP',
-                               '-lstdc++'],
-                           sources=[
-                               './ising/ext_sources/bucketSelectCPU' + CPP_EXT,
-                               './ising/ext_sources/bucketselectcpu.f90',
-                               './ising/ext_sources/cpucsort' + CPP_EXT,
-                               './ising/ext_sources/cpu_thrust_sort.f90',
-                               './ising/ext_sources/cpusearch.pyf',
-                               './ising/ext_sources/cpusearch.f90'])
+def customize_compiler_for_nvcc(self):
+    """inject deep into distutils to customize how the dispatch
+    to gcc/nvcc works.
 
-GPU_SEARCH_EXT = Extension('isinggpu',
-                           sources=[
-                               './ising/ext_sources/gpusearch.pyf',
-                               './ising/ext_sources/gpucsort.cu',
-                               './ising/ext_sources/global.f90',
-                               './ising/ext_sources/gpu_thrust_sort.f90',
-                               './ising/ext_sources/bucketSelect.cu',
-                               './ising/ext_sources/bucketselect.f90',
-                               './ising/ext_sources/search.f90',
-                               './ising/ext_sources/gpusearch.f90'])
+    If you subclass UnixCCompiler, it's not trivial to get your subclass
+    injected in, and still have the right customizations (i.e.
+    distutils.sysconfig.customize_compiler) run on it. So instead of going
+    the OO route, I have this. Note, it's kindof like a wierd functional
+    subclassing going on."""
 
-EXTENSIONS = [CPU_SEARCH_EXT, GPU_SEARCH_EXT]
+    # tell the compiler it can processes .cu
+    self.src_extensions.append('.cu')
+
+    # save references to the default compiler_so and _comple methods
+    default_compiler_so = self.compiler_so
+    super = self._compile
+
+    # now redefine the _compile method. This gets executed for each
+    # object but distutils doesn't have the ability to change compilers
+    # based on source extension: we add it.
+
+    def _compile(obj, src, ext, cc_args, extra_postargs, pp_opts):
+        if os.path.splitext(src)[1] == '.cu':
+            # use the cuda for .cu files
+            self.set_executable('compiler_so', CUDA['nvcc'])
+            # use only a subset of the extra_postargs, which are 1-1 translated
+            # from the extra_compile_args in the Extension class
+            postargs = extra_postargs['nvcc']
+        else:
+            postargs = extra_postargs['gcc']
+
+        super(obj, src, ext, cc_args, postargs, pp_opts)
+        # reset the default compiler_so, which we might have changed for cuda
+        self.compiler_so = default_compiler_so
+
+    # inject our redefined _compile method into the class
+    self._compile = _compile
 
 
 CPU_EXTENSION = Extension(
-    "isinggpu",
+    "isingcpu",
     sources=[
         "ising/ext_sources/select.cpp",
         "ising/ext_sources/cpu_wrapper.pyx"
     ],
-    libraries=["stdc++"],
+    libraries=["stdc++", "omp"],
     language="c++",
     extra_compile_args={
         "nvcc": [],
@@ -104,10 +118,28 @@ CPU_EXTENSION = Extension(
             "-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP",
         ]
     },
-    include_dirs=[numpy_include, CUDA["include"], "cythontest/ext_sources"]
+    include_dirs=[numpy_include, CUDA["include"], "ising/ext_sources"]
 )
 
-EXTENSIONS = [CPU_EXTENSION]
+GPU_EXTENSION = Extension(
+    "isinggpu",
+    sources=[
+        "ising/ext_sources/kernels.cu",
+        "ising/ext_sources/search.cu",
+        "ising/ext_sources/gpu_wrapper.pyx"
+    ],
+    libraries=["stdc++", "cudart"],
+    library_dirs = [CUDA['lib64']],
+    language="c++",
+    extra_compile_args={
+        "nvcc": ["--ptxas-options=-v", "-c", "--compiler-options", "'-fPIC'"],
+        "gcc": []
+    },
+    include_dirs=[numpy_include, CUDA["include"], "ising/ext_sources"]
+)
+
+EXTENSIONS = [CPU_EXTENSION, GPU_EXTENSION]
+
 
 class BuildExtCommand(build_ext):
     def build_extensions(self):
