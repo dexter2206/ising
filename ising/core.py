@@ -7,14 +7,17 @@ from ising.helpers import EnergiesAndStates, decode_state, ising_to_qubo
 from ising.graphtools import read_graph
 import isingcpu
 
-if not logging.getLogger('ising').handlers:
-    logging.basicConfig(level='WARNING')
+if not logging.getLogger("ising").handlers:
+    logging.basicConfig(level="WARNING")
 
 try:
     import isinggpu
 except ImportError:
-    logging.getLogger('ising').info('The ising package is installed with no GPU support.')
+    logging.getLogger("ising").info(
+        "The ising package is installed with no GPU support."
+    )
     isinggpu = None
+
 
 def search(
     graph,
@@ -24,14 +27,14 @@ def search(
     block_size=32,
     chunk_exponent=None,
     precision="single",
-    show_progress=False
+    show_progress=False,
 ):
     if use_gpu and isinggpu is None:
         raise ValueError(
             "The ising package has been installed without GPU support. Set use_gpu=False"
         )
 
-    logger = logging.getLogger('ising')
+    logger = logging.getLogger("ising")
     jh_mat, labels = read_graph(graph)
     qubo, const = ising_to_qubo(jh_mat)
     kwargs = {}
@@ -39,13 +42,13 @@ def search(
     method = "gpu" if use_gpu else "cpu"
 
     if chunk_exponent is not None:
-        logger.debug('Chunk size given explicitly as %f.', chunk_exponent)
+        logger.debug("Chunk size given explicitly as %f.", chunk_exponent)
     else:
-        logger.debug('Deducing chunk size from the available memory.')
+        logger.debug("Deducing chunk size from the available memory.")
         chunk_exponent = max_chunk_size_for_method(method)
 
     if chunk_exponent > jh_mat.shape[0]:
-        logger.debug('Clipping chunk size exponent to the number of spins.')
+        logger.debug("Clipping chunk size exponent to the number of spins.")
         chunk_exponent = jh_mat.shape[0]
 
     if use_gpu:
@@ -55,12 +58,14 @@ def search(
     else:
         module = isingcpu
 
-    logger.info('Choosen computation mehtod: %s', method)
+    logger.info("Choosen computation mehtod: %s", method)
 
-    logger.info('Chunk size exponent that will be used: %d', chunk_exponent)
+    logger.info("Chunk size exponent that will be used: %d", chunk_exponent)
 
     if num_states > 2 * 2 ** chunk_exponent:
-        logger.warning('Requested more states than two chunks. Clipping at 2 ** (chunk size)')
+        logger.warning(
+            "Requested more states than two chunks. Clipping at 2 ** (chunk size)"
+        )
         num_states = 2 ** chunk_exponent
 
     dtype = numpy.float32 if precision == "single" else numpy.float64
@@ -86,11 +91,15 @@ def search(
     find(**kwargs)
     states_out = None if energies_only else kwargs["states_out"]
 
-    return EnergiesAndStates(raw_states=states_out, labels=labels, energies=kwargs["energies_out"] + const)
+    return EnergiesAndStates(
+        raw_states=states_out, labels=labels, energies=kwargs["energies_out"] + const
+    )
+
 
 def dummy_callback(_):
     """Dummy callback doing nothing."""
     pass
+
 
 def determine_max_sweep_size():
     available = psutil.virtual_memory().available
@@ -116,6 +125,7 @@ def determine_max_sweep_size():
 
     return sweep
 
+
 def max_chunk_size(mem_bytes):
     """Determine maximum chunk size for use with given ammount of memory.
 
@@ -138,6 +148,7 @@ def max_chunk_size(mem_bytes):
         chunk_size -= 1
     return chunk_size
 
+
 def max_chunk_size_for_method(method):
     """Determine max chunk size given computation method.
 
@@ -149,10 +160,10 @@ def max_chunk_size_for_method(method):
     :raises ValueError: if unrecognized computation method is passed.
     """
     method = method.lower()
-    if method == 'cpu':
+    if method == "cpu":
         mem_bytes = psutil.virtual_memory().available
-    elif method == 'gpu':
+    elif method == "gpu":
         mem_bytes, _ = isinggpu.cy_get_gpu_mem_info()
     else:
-        raise ValueError('Unknown computation method: %s', method)
+        raise ValueError("Unknown computation method: %s", method)
     return max_chunk_size(mem_bytes)
