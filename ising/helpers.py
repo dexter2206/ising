@@ -36,7 +36,7 @@ def decode_state(state_repr, no_spins, labels):
     state = {}
 
     for i in range(no_spins):
-        state[labels[no_spins-(i+1)]] = 1 if state_repr % 2 else -1
+        state[i] = 1 if state_repr % 2 else -1
         state_repr //= 2
     return state
 
