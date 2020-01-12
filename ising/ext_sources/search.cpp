@@ -15,7 +15,7 @@ T energy(int64_t state_repr, T* Q, int num_bits)
     bit = (state_repr >> i) & 1;
     if(bit) {
       for(j = i; j < num_bits; j++) {
-	energy -= Q[i + j * num_bits] * bit * ((state_repr >> j) & 1);
+	energy -= Q[i * num_bits + j] * bit * ((state_repr >> j) & 1);
       }
     }
   }
