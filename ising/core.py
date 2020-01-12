@@ -89,11 +89,16 @@ def search(
         kwargs["states_out"] = numpy.empty(num_states, dtype=numpy.int64)
 
     find(**kwargs)
-    states_out = None if energies_only else kwargs["states_out"]
 
-    return EnergiesAndStates(
-        raw_states=states_out, labels=labels, energies=kwargs["energies_out"] + const
-    )
+    kwargs["energies_out"] += const
+    if energies_only:
+        energies = sorted(kwargs["energies_out"])
+        states = None
+    else:
+        energies, states = zip(*(sorted(zip(kwargs["energies_out"], kwargs["states_out"]))))
+        energies, states = list(energies), list(states)
+
+    return EnergiesAndStates(raw_states=states, labels=labels, energies=energies)
 
 
 def dummy_callback(_):
