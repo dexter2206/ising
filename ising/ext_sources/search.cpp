@@ -46,10 +46,10 @@ void find_lowest(
   T* lowest_energies = new T[num_states * 2];
   long int* lowest_states = new long int[num_states * 2];
 
-  for(int m=0; m < pow(2, num_bits - chunk_exponent); m++) {
+  for(long int m=0; m < pow(2, num_bits - chunk_exponent); m++) {
     if(callback != NULL) callback(m, user_data);
 #pragma omp parallel for private(state_repr)
-    for(int k=0; k < chunk_size; k++) {
+    for(long int k=0; k < chunk_size; k++) {
       state_repr = k + m * chunk_size;
       energies[k] = energy(state_repr, Jh, num_bits);
       states[k] = state_repr;
