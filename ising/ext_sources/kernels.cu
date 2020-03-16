@@ -21,7 +21,7 @@ T energy(int64_t state_repr, T* Q, int N)
 
 
 template <typename T>
-void __global__ search(T* Q, int N, int sweep_size, T* energies, long int* states, int m)
+void __global__ search(T* Q, int N, int sweep_size, T* energies, long int* states, long int m)
 {
   int idx = threadIdx.x + blockDim.x * blockIdx.x;
   int i;
@@ -35,7 +35,7 @@ void __global__ search(T* Q, int N, int sweep_size, T* energies, long int* state
 
 
 template <typename T>
-void __global__ search_energies_only(T* Q, int N, int sweep_size, T* energies, int m)
+void __global__ search_energies_only(T* Q, int N, int sweep_size, T* energies, long int m)
 {
   int idx = threadIdx.x + blockDim.x * blockIdx.x;
   int i;
@@ -49,19 +49,19 @@ void __global__ search_energies_only(T* Q, int N, int sweep_size, T* energies, i
 
 template
 __global__
-void search<float>(float* Q, int N, int sweep_size, float* energies, long int* states, int m);
+void search<float>(float* Q, int N, int sweep_size, float* energies, long int* states, long int m);
 
 
 template
 __global__
-void search<double>(double* Q, int N, int sweep_size, double* energies, long int* states, int m);
+void search<double>(double* Q, int N, int sweep_size, double* energies, long int* states, long int m);
 
 
 template
 __global__
-void search_energies_only<float>(float* Q, int N, int sweep_size, float* energies, int m);
+void search_energies_only<float>(float* Q, int N, int sweep_size, float* energies, long int m);
 
 
 template
 __global__
-void search_energies_only<double>(double* Q, int N, int sweep_size, double* energies, int m);
+void search_energies_only<double>(double* Q, int N, int sweep_size, double* energies, long int m);
