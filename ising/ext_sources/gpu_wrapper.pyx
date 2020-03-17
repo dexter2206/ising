@@ -14,6 +14,14 @@ cdef extern from "search.cuh":
     cdef void find_lowest_energies_only[T](T*, int, int, T*, int, int, int, void*, callback_function)
     cdef void getGPUMemInfo(unsigned long int* free, unsigned long int* total)
 
+class DummyProgressBar:
+
+    def update(self, n):
+        pass
+
+    def finish(self):
+        pass
+
 def cy_find_lowest_float(
     float[:,:] Q,
     int num_spins,
@@ -29,7 +37,7 @@ def cy_find_lowest_float(
         pbar = progressbar.ProgressBar(max_value=2 ** (num_spins-chunk_exponent))
         pbar.update(0)
     else:
-        pbar = None
+        pbar = DummyProgressBar()
 	
     find_lowest[float](
         &Q[0,0],
@@ -43,9 +51,6 @@ def cy_find_lowest_float(
 	<void *> pbar,
 	callback	
     )
-
-    if pbar:
-        pbar.finish()
 	
 def cy_find_lowest_double(
     double[:,:] Q,
@@ -62,7 +67,7 @@ def cy_find_lowest_double(
         pbar = progressbar.ProgressBar(max_value=2 ** (num_spins-chunk_exponent))
         pbar.update(0)
     else:
-        pbar = None
+        pbar = DummyProgressBar()
 	
     find_lowest[double](
         &Q[0,0],
@@ -94,7 +99,7 @@ def cy_find_lowest_energies_only_float(
         pbar = progressbar.ProgressBar(max_value=2 ** (num_spins-chunk_exponent))
         pbar.update(0)
     else:
-        pbar = None
+        pbar = DummyProgressBar()
 	
     find_lowest_energies_only[float](
         &Q[0,0],
@@ -125,7 +130,7 @@ def cy_find_lowest_energies_only_double(
         pbar = progressbar.ProgressBar(max_value=2 ** (num_spins-chunk_exponent))
         pbar.update(0)
     else:
-        pbar = None
+        pbar = DummyProgressBar()
 	
     find_lowest_energies_only[double](
         &Q[0,0],
