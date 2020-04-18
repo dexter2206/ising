@@ -7,14 +7,17 @@ from distutils.extension import Extension
 from Cython.Distutils import build_ext
 from Cython.Build import cythonize
 
-with open("README.rst") as readme:
-    LONG_DESCRIPTION = readme.read()
-
 # Obtain the numpy include directory.  This logic works across numpy versions.
 try:
     numpy_include = np.get_include()
 except AttributeError:
     numpy_include = np.get_numpy_include()
+
+
+def read_file(path) -> str:
+    """Read whole file"""
+    with open(path) as f:
+        return f.read()
 
 
 def find_in_path(name, path):
@@ -156,7 +159,7 @@ setup(
     use_scm_version=True,
     name="ising",
     description=__doc__,
-    long_description=LONG_DESCRIPTION,
+    long_description=read_file("README.rst"),
     cmdclass={"build_ext": BuildExtCommand},
     setup_requires=["setuptools_scm", "cython"],
     install_requires=["numpy>=0.16.0", "psutil", "progressbar2", "future", "cython"],
