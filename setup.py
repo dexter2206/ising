@@ -1,11 +1,9 @@
 """Ising: a package for exactly solving abritrary Ising model instances using exhaustive search."""
 import os
 from os.path import join as pjoin
-from setuptools import setup, find_packages  # pylint: disable=unused-import
+from setuptools import setup
 import numpy as np
 from distutils.extension import Extension
-
-# from setup_helpers import BuildExtCommand, find_cuda_home, customize_compiler_for_nvcc
 from Cython.Distutils import build_ext
 from Cython.Build import cythonize
 
@@ -160,8 +158,8 @@ setup(
     description=__doc__,
     long_description=LONG_DESCRIPTION,
     cmdclass={"build_ext": BuildExtCommand},
-    setup_requires=["setuptools_scm"],
-    install_requires=["numpy>=0.16.0", "psutil", "progressbar2", "future"],
+    setup_requires=["setuptools_scm", "cython"],
+    install_requires=["numpy>=0.16.0", "psutil", "progressbar2", "future", "cython"],
     ext_modules=cythonize(EXTENSIONS),
     packages=["ising"],
 )
