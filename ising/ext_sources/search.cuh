@@ -1,7 +1,7 @@
 template <typename T>
 void test(T x);
 
-typedef void (*callback_function)(int, void*);
+typedef int (*callback_function)(int, void*);
 
 template <typename T>
 void find_lowest(

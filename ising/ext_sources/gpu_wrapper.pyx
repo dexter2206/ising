@@ -4,14 +4,17 @@ from ctypes import c_float, c_double
 import progressbar
 
 
-cdef void callback(int chunk, void* progressbar):
-    if progressbar != NULL:
-        (<object>progressbar).update(chunk)
+cdef int callback(int chunk, void* progressbar) except -1:
+    try:
+        if progressbar != NULL:
+            (<object>progressbar).update(chunk)
+    except:
+        raise
 
 cdef extern from "search.cuh":
-    ctypedef void (*callback_function)(int, void*);
-    cdef void find_lowest[T](T*, int, int, T*, long int*, int, int, int, void*, callback_function)
-    cdef void find_lowest_energies_only[T](T*, int, int, T*, int, int, int, void*, callback_function)
+    ctypedef int (*callback_function)(int, void*) except -1;
+    cdef void find_lowest[T](T*, int, int, T*, long int*, int, int, int, void*, callback_function) except *
+    cdef void find_lowest_energies_only[T](T*, int, int, T*, int, int, int, void*, callback_function) except *
     cdef void getGPUMemInfo(unsigned long int* free, unsigned long int* total)
 
 class DummyProgressBar:

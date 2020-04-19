@@ -4,18 +4,23 @@ from ctypes import c_float, c_double
 import progressbar
 
 
-cdef void callback(int chunk, void* progressbar):
-    if progressbar != NULL:
-        (<object>progressbar).update(chunk)
+cdef int callback(int chunk, void* progressbar) except -1:
+    try:
+        if progressbar != NULL:
+            (<object>progressbar).update(chunk)
+    except:
+        raise
+
 
 cdef extern from "select.h":
     cdef void top_k_int_by_key[T](long int*, T*, int, int)
     cdef void top_k[T](T*, int, int)
 
+
 cdef extern from "search.cpp":
-    ctypedef void (*callback_function)(int, void*);
-    cdef void find_lowest[T](T*, int, int, T*, long int*, int, void*, callback_function)
-    cdef void find_lowest_energies_only[T](T*, int, int, T*, int, void*, callback_function)
+    ctypedef int (*callback_function)(int, void*) except -1;
+    cdef void find_lowest[T](T*, int, int, T*, long int*, int, void*, callback_function) except *;
+    cdef void find_lowest_energies_only[T](T*, int, int, T*, int, void*, callback_function) except *;
 
 def cy_top_k_int_by_float_key(long int[:] values, float[:] keys, int length, int k):
     top_k_int_by_key[float](&values[0], &keys[0], length, k)

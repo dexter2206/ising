@@ -40,7 +40,9 @@ void find_lowest(
   cudaMalloc((void **) &d_low_st, sizeof(long int) * num_st *2);
   
   for(long int m=0; m < pow(2, N - chunk_exp); m++) {
-    callback(m, user_data);
+    if(callback != NULL) {
+        if(callback(m, user_data) == -1) return;
+    }
     idx = m * chunk_size;
     search<<<grid_size, block_size>>>(d_Jh, N, chunk_size, d_energies, d_states, idx);
 
@@ -98,7 +100,9 @@ void find_lowest_energies_only(
   cudaMalloc((void **) &d_low_en, sizeof(T) * num_st * 2);
   
   for(int m=0; m < pow(2, N - chunk_exp); m++) {
-    callback(m, user_data);
+    if(callback != NULL) {
+        if(callback(m, user_data) == -1) return;
+    }
     idx = m * chunk_size;
     search_energies_only<<<grid_size, block_size>>>(d_Jh, N, chunk_size, d_energies, idx);
 
