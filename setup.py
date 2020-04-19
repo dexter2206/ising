@@ -122,42 +122,48 @@ def customize_compiler_for_nvcc(self):
     self._compile = _compile
 
 
-CPU_EXTENSION = Extension(
-    "isingcpu",
-    sources=["ising/ext_sources/select.cpp", "ising/ext_sources/cpu_wrapper.pyx"],
-    libraries=["stdc++", "omp"],
-    language="c++",
-    extra_compile_args={
-        "nvcc": [],
-        "gcc": [
-            "-c",
-            "-O3",
-            "-fPIC",
-            "-fopenmp",
-            "-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP",
-        ],
-    },
-    include_dirs=[numpy_include, "ising/ext_sources"],
-)
+def construct_extensions():
+    include_dirs = [numpy_include, "ising/ext_sources"]
+    cpu_extension = Extension(
+        "isingcpu",
+        sources=["ising/ext_sources/select.cpp", "ising/ext_sources/cpu_wrapper.pyx"],
+        libraries=["stdc++", "omp"],
+        language="c++",
+        extra_compile_args={
+            "nvcc": [],
+            "gcc": [
+                "-c",
+                "-O3",
+                "-fPIC",
+                "-fopenmp",
+                "-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP",
+            ],
+        },
+        include_dirs=include_dirs,
+    )
 
-GPU_EXTENSION = Extension(
-    "isinggpu",
-    sources=[
-        "ising/ext_sources/kernels.cu",
-        "ising/ext_sources/search.cu",
-        "ising/ext_sources/gpu_wrapper.pyx",
-    ],
-    libraries=["stdc++", "cudart"],
-    library_dirs=[str(CUDA_CFG.get("lib64"))],
-    language="c++",
-    extra_compile_args={
-        "nvcc": ["--ptxas-options=-v", "-c", "--compiler-options", "'-fPIC'"],
-        "gcc": [],
-    },
-    include_dirs=[numpy_include, str(CUDA_CFG.get("include")), "ising/ext_sources"],
-)
+    extensions = [cpu_extension]
 
-EXTENSIONS = [CPU_EXTENSION, GPU_EXTENSION] if CUDA_CFG else [CPU_EXTENSION]
+    if CUDA_CFG:
+        include_dirs.append(str(CUDA_CFG.get("include")))
+        gpu_extension = Extension(
+            "isinggpu",
+            sources=[
+                "ising/ext_sources/kernels.cu",
+                "ising/ext_sources/search.cu",
+                "ising/ext_sources/gpu_wrapper.pyx",
+            ],
+            libraries=["stdc++", "cudart"],
+            library_dirs=[str(CUDA_CFG.get("lib64"))],
+            language="c++",
+            extra_compile_args={
+                "nvcc": ["--ptxas-options=-v", "-c", "--compiler-options", "'-fPIC'"],
+                "gcc": [],
+            },
+            include_dirs=include_dirs,
+        )
+        extensions.append(gpu_extension)
+    return extensions
 
 
 class BuildExtCommand(build_ext):
@@ -174,6 +180,6 @@ setup(
     cmdclass={"build_ext": BuildExtCommand},
     setup_requires=["setuptools_scm", "cython"],
     install_requires=["numpy>=0.16.0", "psutil", "progressbar2", "future", "cython"],
-    ext_modules=cythonize(EXTENSIONS),
+    ext_modules=cythonize(construct_extensions()),
     packages=["ising"],
 )
