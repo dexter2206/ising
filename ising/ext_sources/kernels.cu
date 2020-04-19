@@ -5,14 +5,17 @@ __device__
 T energy(int64_t state_repr, T* Q, int N)
 {
   int i, j;
-  short int bit;
+  char bits[64];
   T energy = 0;
-  
+
   for(i = 0; i < N; i++) {
-    bit = (state_repr >> i) & 1;
-    if(bit) {
+      bits[i] = (state_repr >> i) & 1;
+  }
+
+  for(i = 0; i < N; i++) {
+    if(bits[i]) {
       for(j = i; j < N; j++) {
-	energy -= Q[i * N + j] * bit * ((state_repr >> j) & 1);
+	energy -= Q[i * N + j] * bits[i] * bits[j];
       }
     }
   }
