@@ -501,7 +501,7 @@ void partition(T *input, int64_t length, T pivot, int k)
     le<T> predicate_le(pivot);
     lt<T> predicate_lt(pivot);
     thrust::device_ptr<T> middle = thrust::partition(data, data+length, predicate_lt);
-    if(middle != input + length - k) {
+    if(middle != data + length - k) {
         thrust::partition(middle, data+length, predicate_le);
     }
 }
