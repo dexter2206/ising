@@ -1,6 +1,7 @@
 """Ising: a package for exactly solving abritrary Ising model instances using exhaustive search."""
+from pathlib import Path
 import os
-from os.path import join as pjoin
+from typing import Iterable, Optional
 from setuptools import setup
 import numpy as np
 from distutils.extension import Extension
@@ -15,61 +16,66 @@ except AttributeError:
 
 
 def read_file(path) -> str:
-    """Read whole file"""
+    """Read whole file."""
     with open(path) as f:
         return f.read()
 
 
-def find_in_path(name, path):
-    "Find a file in a search path"
-    # adapted fom http://code.activestate.com/recipes/52224-find-a-file-given-a-search-path/
-    for dir in path.split(os.pathsep):
-        binpath = pjoin(dir, name)
-        if os.path.exists(binpath):
-            return os.path.abspath(binpath)
+def find_executable(name, executables_paths: Iterable[Path]) -> Optional[Path]:
+    """Find a file in a search path
+
+    Adapted fom http://code.activestate.com/recipes/52224-find-a-file-given-a-search-path/
+    """
+    for path in executables_paths:
+        bin_path = path.joinpath(name)
+        if bin_path.exists():
+            return bin_path.absolute()
     return None
 
 
-def locate_cuda():
-    """Locate the CUDA environment on the system
+def locate_cuda() -> dict:
+    """Locate the CUDA environment on the system end return its configuration.
 
-    Returns a dict with keys 'home', 'nvcc', 'include', and 'lib64'
-    and values giving the absolute path to each directory.
+    The returned dictionary is either empty, indicating that CUDA toolkit was not
+    found, or contains keys "name", "nvcc", "include", "lib64" that map to the
+    absolute paths of those directories.
 
-    Starts by looking for the CUDAHOME env variable. If not found, everything
-    is based on finding 'nvcc' in the PATH.
+    This starts by looking for the CUDAHOME env variable. If not found, everything
+    is based on finding "nvcc" executable in the PATH.
+
+    This is a slightly modernized version of the function here:
+    https://github.com/rbgirshick/py-faster-rcnn/blob/master/lib/setup.py
     """
-
-    # first check if the CUDAHOME env variable is in use
     if "CUDAHOME" in os.environ:
-        home = os.environ["CUDAHOME"]
-        nvcc = pjoin(home, "bin", "nvcc")
+        cuda_home = Path(os.environ["CUDAHOME"])
+        nvcc_path = cuda_home.joinpath("bin", "nvcc")
     else:
-        # otherwise, search the PATH for NVCC
-        nvcc = find_in_path("nvcc", os.environ["PATH"])
-        if nvcc is None:
-            raise EnvironmentError(
-                "The nvcc binary could not be "
-                "located in your $PATH. Either add it to your path, or set $CUDAHOME"
-            )
-        home = os.path.dirname(os.path.dirname(nvcc))
+        nvcc_path = find_executable("nvcc", (Path(p) for p in os.environ["PATH"].split(os.pathsep)))
+        # Contrary to original version we don't raise, but return an empty dict
+        if nvcc_path is None:
+            return {}
+        cuda_home = nvcc_path.parent
 
-    cudaconfig = {
-        "home": home,
-        "nvcc": nvcc,
-        "include": pjoin(home, "include"),
-        "lib64": pjoin(home, "lib64"),
+    cuda_config = {
+        "home": cuda_home,
+        "nvcc": nvcc_path,
+        "include": cuda_home.joinpath("include"),
+        "lib64": cuda_home.joinpath("lib64"),
     }
-    for k, v in iter(cudaconfig.items()):
-        if not os.path.exists(v):
+
+    for key, path in cuda_config.items():
+        if not path.exists:
+            # If we reached this point, we found CUDA toolkit but didn't find some of the
+            # essential directories. To avoid confusion we raise an error.
             raise EnvironmentError(
-                "The CUDA %s path could not be located in %s" % (k, v)
+                f"The CUDA {key} path could not be located in {path}. \n"
+                f"Detected CUDA home directory: {cuda_home}."
             )
 
-    return cudaconfig
+    return cuda_config
 
 
-CUDA = locate_cuda()
+CUDA_CFG = locate_cuda()
 
 
 def customize_compiler_for_nvcc(self):
@@ -95,15 +101,20 @@ def customize_compiler_for_nvcc(self):
 
     def _compile(obj, src, ext, cc_args, extra_postargs, pp_opts):
         if os.path.splitext(src)[1] == ".cu":
+            if not CUDA_CFG:
+                raise EnvironmentError(
+                    "Tried building GPU based version but no nvcc was found. "
+                    "Please report this at our issue tracker."
+                )
             # use the cuda for .cu files
-            self.set_executable("compiler_so", CUDA["nvcc"])
+            self.set_executable("compiler_so", CUDA_CFG["nvcc"])
             # use only a subset of the extra_postargs, which are 1-1 translated
             # from the extra_compile_args in the Extension class
-            postargs = extra_postargs["nvcc"]
+            post_args = extra_postargs["nvcc"]
         else:
-            postargs = extra_postargs["gcc"]
+            post_args = extra_postargs["gcc"]
 
-        super(obj, src, ext, cc_args, postargs, pp_opts)
+        super(obj, src, ext, cc_args, post_args, pp_opts)
         # reset the default compiler_so, which we might have changed for cuda
         self.compiler_so = default_compiler_so
 
@@ -126,7 +137,7 @@ CPU_EXTENSION = Extension(
             "-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP",
         ],
     },
-    include_dirs=[numpy_include, CUDA["include"], "ising/ext_sources"],
+    include_dirs=[numpy_include, "ising/ext_sources"],
 )
 
 GPU_EXTENSION = Extension(
@@ -137,16 +148,16 @@ GPU_EXTENSION = Extension(
         "ising/ext_sources/gpu_wrapper.pyx",
     ],
     libraries=["stdc++", "cudart"],
-    library_dirs=[CUDA["lib64"]],
+    library_dirs=[CUDA_CFG.get("lib64")],
     language="c++",
     extra_compile_args={
         "nvcc": ["--ptxas-options=-v", "-c", "--compiler-options", "'-fPIC'"],
         "gcc": [],
     },
-    include_dirs=[numpy_include, CUDA["include"], "ising/ext_sources"],
+    include_dirs=[numpy_include, CUDA_CFG.get("include"), "ising/ext_sources"],
 )
 
-EXTENSIONS = [CPU_EXTENSION, GPU_EXTENSION]
+EXTENSIONS = [CPU_EXTENSION, GPU_EXTENSION] if CUDA_CFG else [CPU_EXTENSION]
 
 
 class BuildExtCommand(build_ext):
