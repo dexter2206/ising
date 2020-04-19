@@ -54,7 +54,7 @@ def locate_cuda() -> dict:
         # Contrary to original version we don't raise, but return an empty dict
         if nvcc_path is None:
             return {}
-        cuda_home = nvcc_path.parent
+        cuda_home = nvcc_path.parent.parent
 
     cuda_config = {
         "home": cuda_home,
@@ -107,7 +107,7 @@ def customize_compiler_for_nvcc(self):
                     "Please report this at our issue tracker."
                 )
             # use the cuda for .cu files
-            self.set_executable("compiler_so", CUDA_CFG["nvcc"])
+            self.set_executable("compiler_so", str(CUDA_CFG["nvcc"]))
             # use only a subset of the extra_postargs, which are 1-1 translated
             # from the extra_compile_args in the Extension class
             post_args = extra_postargs["nvcc"]
@@ -124,6 +124,9 @@ def customize_compiler_for_nvcc(self):
 
 def construct_extensions():
     include_dirs = [numpy_include, "ising/ext_sources"]
+    if CUDA_CFG:
+        include_dirs.append(str(CUDA_CFG.get("include")))
+
     cpu_extension = Extension(
         "isingcpu",
         sources=["ising/ext_sources/select.cpp", "ising/ext_sources/cpu_wrapper.pyx"],
@@ -145,7 +148,6 @@ def construct_extensions():
     extensions = [cpu_extension]
 
     if CUDA_CFG:
-        include_dirs.append(str(CUDA_CFG.get("include")))
         gpu_extension = Extension(
             "isinggpu",
             sources=[
