@@ -148,13 +148,13 @@ GPU_EXTENSION = Extension(
         "ising/ext_sources/gpu_wrapper.pyx",
     ],
     libraries=["stdc++", "cudart"],
-    library_dirs=[CUDA_CFG.get("lib64")],
+    library_dirs=[str(CUDA_CFG.get("lib64"))],
     language="c++",
     extra_compile_args={
         "nvcc": ["--ptxas-options=-v", "-c", "--compiler-options", "'-fPIC'"],
         "gcc": [],
     },
-    include_dirs=[numpy_include, CUDA_CFG.get("include"), "ising/ext_sources"],
+    include_dirs=[numpy_include, str(CUDA_CFG.get("include")), "ising/ext_sources"],
 )
 
 EXTENSIONS = [CPU_EXTENSION, GPU_EXTENSION] if CUDA_CFG else [CPU_EXTENSION]
